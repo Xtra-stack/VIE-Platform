@@ -1,6 +1,24 @@
+import { verifyToken } from "../utils/jwt.js";
+
 export const requireAuth = (req, res, next) => {
-  return res.status(501).json({
-    success: false,
-    error: "Authentication not implemented",
-  });
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      error: "Authorization token missing",
+    });
+  }
+
+  try {
+    const decoded = verifyToken(token);
+    req.user = decoded;
+    return next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      error: "Invalid or expired token",
+    });
+  }
 };

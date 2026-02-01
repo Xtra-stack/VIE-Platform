@@ -1,11 +1,8 @@
 import { Router } from "express";
-import { notImplemented } from "../utils/notImplemented.js";
+import { login } from "../controllers/auth.controller.js";
 
 const router = Router();
 
-router.post("/register", notImplemented("Auth register"));
-router.post("/login", notImplemented("Auth login"));
-router.post("/logout", notImplemented("Auth logout"));
-router.post("/refresh", notImplemented("Auth refresh"));
+router.post("/login", login);
 
 export default router;

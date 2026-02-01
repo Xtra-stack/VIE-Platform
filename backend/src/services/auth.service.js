@@ -1,17 +1,31 @@
+import { User } from "../models/User.js";
+import { signToken } from "../utils/jwt.js";
+
 export class AuthService {
-  async register() {
-    throw new Error("AuthService.register not implemented");
-  }
+  async login({ username, password }) {
+    const user = await User.findOne({
+      $or: [{ username }, { email: username }],
+      isActive: true,
+    });
 
-  async login() {
-    throw new Error("AuthService.login not implemented");
-  }
+    if (!user) {
+      return null;
+    }
 
-  async logout() {
-    throw new Error("AuthService.logout not implemented");
-  }
+    const isValid = await user.comparePassword(password);
+    if (!isValid) {
+      return null;
+    }
 
-  async refresh() {
-    throw new Error("AuthService.refresh not implemented");
+    user.lastLogin = new Date();
+    await user.save();
+
+    const token = signToken({
+      id: user._id.toString(),
+      username: user.username,
+      role: user.role,
+    });
+
+    return { user, token };
   }
 }

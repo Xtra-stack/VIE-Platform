@@ -1,15 +1,35 @@
-export const register = (req, res) => {
-  res.status(501).json({ success: false, error: "Register not implemented" });
-};
+import { AuthService } from "../services/auth.service.js";
 
-export const login = (req, res) => {
-  res.status(501).json({ success: false, error: "Login not implemented" });
-};
+const authService = new AuthService();
 
-export const logout = (req, res) => {
-  res.status(501).json({ success: false, error: "Logout not implemented" });
-};
+export const login = async (req, res, next) => {
+  try {
+    const { username, password } = req.body || {};
 
-export const refresh = (req, res) => {
-  res.status(501).json({ success: false, error: "Refresh not implemented" });
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "Username and password are required",
+      });
+    }
+
+    const result = await authService.login({ username, password });
+
+    if (!result) {
+      return res.status(401).json({
+        success: false,
+        error: "Invalid credentials",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        token: result.token,
+        user: result.user,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
 };

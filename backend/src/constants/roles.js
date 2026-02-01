@@ -1,5 +1,5 @@
 export const ROLES = {
-  JUNIOR_DEV: "JUNIOR_DEV",
-  SENIOR_DEV: "SENIOR_DEV",
+  JUNIOR: "JUNIOR",
+  SENIOR: "SENIOR",
   MANAGER: "MANAGER",
 };

@@ -1,7 +1,10 @@
-export const signToken = () => {
-  throw new Error("JWT signing not implemented");
+import jwt from "jsonwebtoken";
+import { env } from "../config/env.js";
+
+export const signToken = (payload) => {
+  return jwt.sign(payload, env.jwtSecret, { expiresIn: env.jwtExpiry });
 };
 
-export const verifyToken = () => {
-  throw new Error("JWT verification not implemented");
+export const verifyToken = (token) => {
+  return jwt.verify(token, env.jwtSecret);
 };
