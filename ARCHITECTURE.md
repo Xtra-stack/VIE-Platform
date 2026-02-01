@@ -1,5 +1,63 @@
 # VIE SYSTEM ARCHITECTURE
 
+## Architecture Overview (Implemented)
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                         USER BROWSER                         │
+│  React Frontend (Role Dashboards)                            │
+│  - Junior: Submit & track                                   │
+│  - Senior: Review & approve                                 │
+│  - Manager: Final approval                                  │
+└──────────────────────────────┬───────────────────────────────┘
+                               │ HTTPS (JWT)
+                               ▼
+┌──────────────────────────────────────────────────────────────┐
+│                   Node.js Backend (Express)                  │
+│  - Auth + RBAC middleware                                    │
+│  - Submission workflow engine                                │
+│  - Review service                                             │
+└──────────────────────────────┬───────────────────────────────┘
+                               │
+                               ▼
+┌──────────────────────────────────────────────────────────────┐
+│                         MongoDB                              │
+│  - users, projects, submissions, reviews                     │
+└──────────────────────────────────────────────────────────────┘
+
+CI/CD Enforcement (GitHub Actions)
+┌──────────────────────────────────────────────────────────────┐
+│  - Run backend tests                                         │
+│  - Build frontend                                            │
+│  - Required status checks for PRs                            │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Components
+
+### Frontend (Role-Based Dashboards)
+- React + Vite application
+- Login stores JWT in localStorage
+- Role-based routing shows only authorized dashboard
+- UI hides unauthorized actions (UX), backend enforces security
+
+### Backend (RBAC + Workflow Engine)
+- Express API with JWT auth
+- Role-based access control (JUNIOR / SENIOR / MANAGER)
+- Submission + Review services enforce state transitions
+- Statuses reflect review and approval stages
+
+### CI/CD (GitHub Actions)
+- Runs on PRs and pushes to main
+- Backend tests + frontend build
+- Acts as a quality gate for merges
+
+---
+
+## High-Level Architecture Diagram
+
 ## High-Level Architecture Diagram
 
 ```
