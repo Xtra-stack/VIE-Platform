@@ -1,13 +1,77 @@
+import { Project } from "../models/Project.js";
+import { RepositoryService } from "./repository.service.js";
+
 export class ProjectService {
-  async createProject() {
-    throw new Error("ProjectService.createProject not implemented");
+  constructor() {
+    this.repositoryService = new RepositoryService();
   }
 
-  async listProjects() {
-    throw new Error("ProjectService.listProjects not implemented");
+  async createProject({ data, createdBy }) {
+    const project = await Project.create({
+      ...data,
+      createdBy,
+      members: [
+        {
+          userId: createdBy,
+          role: data.ownerRole || "MANAGER",
+        },
+      ],
+    });
+
+    if (data.repositoryPath) {
+      await this.repositoryService.createRepository({
+        projectId: project._id,
+        repositoryPath: data.repositoryPath,
+        defaultBranch: project.mainBranch,
+      });
+    }
+
+    return project;
   }
 
-  async getProject() {
-    throw new Error("ProjectService.getProject not implemented");
+  async listProjectsForUser(userId) {
+    return Project.find({ "members.userId": userId });
+  }
+
+  async listProjectsForManager() {
+    return Project.find();
+  }
+
+  async getProjectForUser(projectId, userId, allowManagerAccess = false, userRole) {
+    const project = await Project.findById(projectId);
+    if (!project) {
+      const error = new Error("Project not found");
+      error.status = 404;
+      throw error;
+    }
+
+    const isMember = project.members.some((member) => member.userId.toString() === userId);
+    const isManager = allowManagerAccess && userRole === "MANAGER";
+
+    if (!isMember && !isManager) {
+      const error = new Error("Forbidden");
+      error.status = 403;
+      throw error;
+    }
+
+    return project;
+  }
+
+  async addMember({ projectId, userId, role }) {
+    const project = await Project.findById(projectId);
+    if (!project) {
+      const error = new Error("Project not found");
+      error.status = 404;
+      throw error;
+    }
+
+    const exists = project.members.some((member) => member.userId.toString() === userId);
+    if (exists) {
+      return project;
+    }
+
+    project.members.push({ userId, role });
+    await project.save();
+    return project;
   }
 }

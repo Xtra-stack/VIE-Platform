@@ -1,11 +1,64 @@
-export const listProjects = (req, res) => {
-  res.status(501).json({ success: false, error: "List projects not implemented" });
+import { ProjectService } from "../services/project.service.js";
+
+const projectService = new ProjectService();
+
+export const listProjects = async (req, res, next) => {
+  try {
+    const projects =
+      req.user.role === "MANAGER"
+        ? await projectService.listProjectsForManager()
+        : await projectService.listProjectsForUser(req.user.id);
+    return res.status(200).json({ success: true, data: projects });
+  } catch (error) {
+    return next(error);
+  }
 };
 
-export const createProject = (req, res) => {
-  res.status(501).json({ success: false, error: "Create project not implemented" });
+export const createProject = async (req, res, next) => {
+  try {
+    const project = await projectService.createProject({
+      data: req.body || {},
+      createdBy: req.user.id,
+    });
+    return res.status(201).json({ success: true, data: project });
+  } catch (error) {
+    return next(error);
+  }
 };
 
-export const getProject = (req, res) => {
-  res.status(501).json({ success: false, error: "Get project not implemented" });
+export const getProject = async (req, res, next) => {
+  try {
+    const project = await projectService.getProjectForUser(
+      req.params.projectId,
+      req.user.id,
+      true,
+      req.user.role
+    );
+    return res.status(200).json({ success: true, data: project });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const addProjectMember = async (req, res, next) => {
+  try {
+    const { userId, role } = req.body || {};
+
+    if (!userId || !role) {
+      return res.status(400).json({
+        success: false,
+        error: "userId and role are required",
+      });
+    }
+
+    const project = await projectService.addMember({
+      projectId: req.params.projectId,
+      userId,
+      role,
+    });
+
+    return res.status(200).json({ success: true, data: project });
+  } catch (error) {
+    return next(error);
+  }
 };
