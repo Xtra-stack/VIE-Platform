@@ -1,5 +1,6 @@
 import { Project } from "../models/Project.js";
 import { RepositoryService } from "./repository.service.js";
+import { ROLES } from "../constants/roles.js";
 
 export class ProjectService {
   constructor() {
@@ -13,7 +14,7 @@ export class ProjectService {
       members: [
         {
           userId: createdBy,
-          role: data.ownerRole || "MANAGER",
+          role: data.ownerRole || ROLES.MANAGER,
         },
       ],
     });
