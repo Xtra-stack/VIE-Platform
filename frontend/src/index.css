@@ -230,3 +230,608 @@ textarea {
   color: #666;
   font-size: 11px;
 }
+/* Code Viewer Styles */
+.code-viewer-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.code-viewer-modal .modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+  background: #f9f9f9;
+}
+
+.modal-header h2 {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+}
+
+.close-btn:hover {
+  color: #000;
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.files-section {
+  margin-bottom: 25px;
+}
+
+.files-section h3 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.files-list {
+  background: #f5f5f5;
+  padding: 15px 20px;
+  border-radius: 4px;
+  list-style-position: inside;
+}
+
+.files-list li {
+  margin: 5px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #555;
+}
+
+.code-section {
+  margin-top: 20px;
+}
+
+.code-section h3 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.code-block {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 15px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid #444;
+}
+
+.code-block code {
+  color: #d4d4d4;
+  display: block;
+  white-space: pre;
+}
+
+/* Line-numbered code table */
+.code-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.code-line {
+  border-bottom: 1px solid #333;
+}
+
+.code-line:hover {
+  background: #252526;
+}
+
+.line-number {
+  background: #252526;
+  border-right: 1px solid #444;
+  padding: 0 12px;
+  text-align: right;
+  user-select: none;
+  color: #858585;
+  width: 50px;
+  min-width: 50px;
+  vertical-align: top;
+}
+
+.line-content {
+  padding: 0 15px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  vertical-align: top;
+}
+
+.line-content code {
+  color: #d4d4d4;
+  font-family: 'Courier New', monospace;
+  background: none;
+}
+
+.no-code {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Code input styling */
+.code-input {
+  font-family: 'Courier New', monospace !important;
+  font-size: 13px !important;
+}
+
+/* Code review sections */
+.code-review-section {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.code-review-section h4 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.code-preview {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 15px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  max-height: 400px;
+  border: 1px solid #444;
+  margin: 10px 0;
+}
+
+.code-preview code {
+  color: #d4d4d4;
+  display: block;
+  white-space: pre;
+}
+
+.files-review {
+  background: white;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.files-review strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.files-review ul {
+  list-style: none;
+  padding: 0;
+}
+
+.files-review li {
+  padding: 4px 8px;
+  background: #f5f5f5;
+  margin: 4px 0;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #555;
+}
+
+/* View Code Button */
+.view-code-btn {
+  background: #28a745;
+  padding: 8px 16px;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.view-code-btn:hover {
+  background: #218838;
+}
+
+/* Activity Timeline Styles */
+.activity-timeline {
+  margin: 20px 0;
+  background: white;
+  padding: 20px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.activity-timeline h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.timeline {
+  position: relative;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #ddd;
+}
+
+.timeline-item {
+  display: flex;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.timeline-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  min-width: 50px;
+  position: relative;
+  z-index: 1;
+}
+
+.action-icon {
+  background: white;
+  border: 2px solid #007bff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.timeline-content {
+  flex: 1;
+  padding: 12px 15px;
+  background: #f9f9f9;
+  border-radius: 4px;
+  border-left: 3px solid #007bff;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.timeline-header strong {
+  color: #333;
+  font-size: 14px;
+}
+
+.timeline-header .role-badge {
+  background: #007bff;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.timeline-header .timestamp {
+  color: #999;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.timeline-message {
+  margin: 5px 0;
+  color: #555;
+  font-size: 13px;
+}
+
+.timeline-details {
+  margin-top: 8px;
+  padding: 8px;
+  background: white;
+  border-radius: 3px;
+  border: 1px solid #e0e0e0;
+  font-size: 12px;
+  color: #666;
+}
+
+.detail-item {
+  display: inline-block;
+  margin-right: 15px;
+  margin-bottom: 4px;
+}
+
+.detail-item strong {
+  color: #333;
+}
+
+.no-activity {
+  text-align: center;
+  color: #999;
+  padding: 20px;
+  font-style: italic;
+}
+
+/* Submission Detail Modal */
+.submission-detail-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.submission-detail-modal {
+  background: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.submission-detail-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 2px solid #ddd;
+  background: #f9f9f9;
+  flex-shrink: 0;
+  gap: 15px;
+}
+
+.submission-detail-modal .modal-header h2 {
+  margin: 0;
+  border: none;
+  padding: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.submission-detail-modal .modal-header .status-badge {
+  flex-shrink: 0;
+}
+
+.submission-detail-modal .close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.submission-detail-modal .close-btn:hover {
+  color: #333;
+  background: #e9e9e9;
+  border-radius: 4px;
+}
+
+.submission-detail-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.submission-detail-modal .detail-info {
+  margin-bottom: 25px;
+}
+
+.submission-detail-modal .info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.submission-detail-modal .info-item {
+  background: #f5f5f5;
+  padding: 12px 15px;
+  border-radius: 4px;
+  font-size: 13px;
+  border-left: 3px solid #007bff;
+}
+
+.submission-detail-modal .info-item strong {
+  color: #333;
+  display: inline-block;
+  min-width: 100px;
+}
+
+.submission-detail-modal .description {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+  border-left: 3px solid #28a745;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.submission-detail-modal .view-code-btn {
+  background: #28a745;
+  color: white;
+  padding: 8px 16px;
+  font-size: 13px;
+  margin-top: 10px;
+  display: inline-block;
+}
+
+.submission-detail-modal .view-code-btn:hover {
+  background: #218838;
+}
+
+.submission-detail-modal .action-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.submission-detail-modal .action-btn {
+  padding: 12px 24px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.submission-detail-modal .merge-btn {
+  background: #17a2b8;
+  color: white;
+}
+
+.submission-detail-modal .merge-btn:hover:not(:disabled) {
+  background: #138496;
+}
+
+.submission-detail-modal .deploy-btn {
+  background: #ffc107;
+  color: #333;
+}
+
+.submission-detail-modal .deploy-btn:hover:not(:disabled) {
+  background: #e0a800;
+}
+
+.submission-detail-modal .action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submission-detail-modal .error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  border: 1px solid #f5c6cb;
+}
+
+.submission-detail-modal .close-detail-btn {
+  background: #6c757d;
+  color: white;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.3s;
+}
+
+.submission-detail-modal .close-detail-btn:hover {
+  background: #5a6268;
+}
+
+.submission-detail-modal .activity-timeline {
+  margin: 20px 0;
+  background: white;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+}
+
+.submission-detail-modal .activity-timeline h3 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .submission-detail-modal-overlay {
+    padding: 10px;
+  }
+
+  .submission-detail-modal {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+
+  .submission-detail-modal .modal-header {
+    flex-wrap: wrap;
+  }
+
+  .submission-detail-modal .modal-header h2 {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .submission-detail-modal .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .submission-detail-modal .action-buttons {
+    flex-direction: column;
+  }
+
+  .submission-detail-modal .action-btn {
+    width: 100%;
+  }
+}

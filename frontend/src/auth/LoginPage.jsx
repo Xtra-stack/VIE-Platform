@@ -18,8 +18,16 @@ export default function LoginPage() {
 
     try {
       const response = await login(username, password);
-      setToken(response.token);
-      navigate('/dashboard');
+      setToken(response.token, response.role, response.companyId);
+      
+      // Redirect based on role
+      const roleMap = {
+        JUNIOR: '/junior/dashboard',
+        SENIOR: '/senior/dashboard',
+        MANAGER: '/manager/dashboard',
+      };
+      const dashboardPath = roleMap[response.role] || '/dashboard';
+      navigate(dashboardPath);
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {
@@ -70,6 +78,17 @@ export default function LoginPage() {
           <p>Manager: manager1 / password123</p>
           <p>Senior: senior1 / password123</p>
           <p>Junior: junior1 / password123</p>
+        </div>
+
+        <div className="login-links">
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => navigate('/')}
+            disabled={loading}
+          >
+            ← Back to Landing
+          </button>
         </div>
       </div>
     </div>

@@ -11,6 +11,34 @@ const codeSubmissionSchema = new mongoose.Schema(
 
 		title: { type: String, required: true, trim: true },
 		description: { type: String, trim: true },
+		
+		// Line-aware code storage
+		codeLines: [
+			{
+				lineNumber: Number,
+				content: String,
+			}
+		],
+		filesChanged: [{ type: String }],
+
+		// Build & Test tracking
+		buildStatus: {
+			type: String,
+			enum: ['PENDING', 'RUNNING', 'SUCCESS', 'FAILED', 'CANCELLED'],
+			default: 'PENDING'
+		},
+		buildLogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BuildLog' }],
+		buildStartedAt: { type: Date },
+		buildCompletedAt: { type: Date },
+		testResults: {
+			total: Number,
+			passed: Number,
+			failed: Number,
+			skipped: Number,
+			coverage: Number
+		},
+		linesAdded: { type: Number, default: 0 },
+		linesRemoved: { type: Number, default: 0 },
 
 		status: {
 			type: String,
@@ -20,6 +48,28 @@ const codeSubmissionSchema = new mongoose.Schema(
 
 		submittedAt: { type: Date, default: Date.now },
 		resolvedAt: { type: Date },
+		
+		// Rejection feedback (learning-oriented)
+		rejectionFeedback: {
+			reason: String,
+			fileName: String,
+			lineNumber: Number,
+			reviewerRole: String,
+			rejectedAt: Date,
+			rejectedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+		},
+		
+		// Resubmission tracking
+		resubmissionCount: { type: Number, default: 0 },
+		previousSubmissionId: { type: mongoose.Schema.Types.ObjectId, ref: "CodeSubmission" },
+		
+		// Merge tracking
+		mergedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+		mergedAt: { type: Date },
+		
+		// Deployment tracking
+		deployedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+		deployedAt: { type: Date },
 	},
 	{ timestamps: true }
 );

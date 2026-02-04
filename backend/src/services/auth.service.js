@@ -24,6 +24,7 @@ export class AuthService {
       id: user._id.toString(),
       username: user.username,
       role: user.role,
+      companyId: user.companyId ? user.companyId.toString() : null,
     });
 
     return { user, token };

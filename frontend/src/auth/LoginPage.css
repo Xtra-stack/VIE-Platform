@@ -65,3 +65,15 @@
 .demo-credentials strong {
   color: #667eea;
 }
+
+.login-links {
+  margin-top: 20px;
+}
+
+.login-links button.secondary {
+  background: #6c757d;
+}
+
+.login-links button.secondary:hover {
+  background: #5a6268;
+}

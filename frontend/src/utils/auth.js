@@ -15,12 +15,20 @@ export const getToken = () => {
   return localStorage.getItem('token');
 };
 
-export const setToken = (token) => {
+export const setToken = (token, role = null, companyId = null) => {
   localStorage.setItem('token', token);
+  if (role) {
+    localStorage.setItem('role', role);
+  }
+  if (companyId) {
+    localStorage.setItem('companyId', companyId);
+  }
 };
 
 export const removeToken = () => {
   localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  localStorage.removeItem('companyId');
 };
 
 export const getUser = () => {
@@ -36,4 +44,12 @@ export const isAuthenticated = () => {
 export const hasRole = (role) => {
   const user = getUser();
   return user && user.role === role;
+};
+
+export const getRole = () => {
+  return localStorage.getItem('role');
+};
+
+export const getCompanyId = () => {
+  return localStorage.getItem('companyId');
 };

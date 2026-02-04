@@ -2,9 +2,9 @@ import { Company } from "../models/Company.js";
 
 export class CompanyService {
   async createCompany(data) {
-    const existing = await Company.findOne();
+    const existing = await Company.findOne({ slug: data.slug });
     if (existing) {
-      const error = new Error("Company already exists");
+      const error = new Error("Company slug already exists");
       error.status = 409;
       throw error;
     }
@@ -13,8 +13,11 @@ export class CompanyService {
     return company;
   }
 
-  async listCompanies() {
-    return Company.find();
+  async listCompanies(companyId = null) {
+    if (!companyId) {
+      return Company.find();
+    }
+    return Company.find({ _id: companyId });
   }
 
   async getCompanyById(companyId) {

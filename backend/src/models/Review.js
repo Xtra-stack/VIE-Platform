@@ -15,6 +15,18 @@ const reviewSchema = new mongoose.Schema(
 		},
 
 		overallComment: { type: String, trim: true },
+		
+		// Line-level comments with suggestions
+		lineComments: [
+			{
+				lineNumber: { type: Number },
+				issue: { type: String },
+				suggestedFix: { type: String },
+				createdAt: { type: Date, default: Date.now },
+			}
+		],
+		
+		// Legacy inline comments (kept for compatibility)
 		inlineComments: {
 			type: [
 				{
@@ -27,10 +39,28 @@ const reviewSchema = new mongoose.Schema(
 			default: [],
 		},
 
+		// Review checklist
+		checklist: {
+			logic: { type: Boolean, default: false },
+			security: { type: Boolean, default: false },
+			performance: { type: Boolean, default: false },
+			readability: { type: Boolean, default: false },
+			tests: { type: Boolean, default: false },
+		},
+
+		// Risk management
+		riskFlag: { type: Boolean, default: false },
+		riskNotes: { type: String, trim: true },
+
 		decision: { type: String, default: "PENDING" },
 		requestedAt: { type: Date, default: Date.now },
 		startedAt: { type: Date },
 		completedAt: { type: Date },
+		
+		// Manager-specific fields
+		managerComment: { type: String, trim: true },
+		riskAccepted: { type: Boolean, default: false },
+		overrideSeniorDecision: { type: Boolean, default: false },
 	},
 	{ timestamps: true }
 );

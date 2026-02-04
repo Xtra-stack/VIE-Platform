@@ -13,7 +13,7 @@ export const createCompany = async (req, res, next) => {
 
 export const listCompanies = async (req, res, next) => {
   try {
-    const companies = await companyService.listCompanies();
+    const companies = await companyService.listCompanies(req.user.companyId || null);
     return res.status(200).json({ success: true, data: companies });
   } catch (error) {
     return next(error);

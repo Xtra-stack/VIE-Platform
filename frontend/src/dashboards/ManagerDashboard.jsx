@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getReviews, approveManagerReview, rejectManagerReview, getSubmission } from '../services/api.js';
+import { getReviews, approveManagerReview, rejectManagerReview, getSubmission, inviteWorkspaceUser } from '../services/api.js';
+import CodeViewer from '../components/CodeViewer.jsx';
+import { getCompanyId } from '../utils/auth.js';
 
 export default function ManagerDashboard() {
   const [reviews, setReviews] = useState([]);
@@ -8,7 +10,16 @@ export default function ManagerDashboard() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [expandedId, setExpandedId] = useState(null);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  const [inviteForm, setInviteForm] = useState({
+    fullName: '',
+    username: '',
+    email: '',
+    password: '',
+    role: 'SENIOR',
+  });
+  const [inviteSuccess, setInviteSuccess] = useState('');
 
   // Form state for manager decisions
   const [decisionForm, setDecisionForm] = useState({
@@ -40,7 +51,9 @@ export default function ManagerDashboard() {
       }
       setSubmissions(submissionsMap);
     } catch (err) {
+      console.error('Error loading reviews:', err);
       setError(err.message || 'Failed to load reviews');
+      setSubmissions({});
     } finally {
       setLoading(false);
     }
@@ -80,7 +93,32 @@ export default function ManagerDashboard() {
     }
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
+  const handleInviteChange = (e) => {
+    const { name, value } = e.target;
+    setInviteForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleInviteUser = async (e) => {
+    e.preventDefault();
+    setError('');
+    setInviteSuccess('');
+
+    try {
+      const companyId = getCompanyId();
+      if (!companyId) {
+        setError('Company ID not found. Please log in again.');
+        return;
+      }
+
+      await inviteWorkspaceUser(companyId, inviteForm);
+      setInviteSuccess('User invited successfully.');
+      setInviteForm({ fullName: '', username: '', email: '', password: '', role: 'SENIOR' });
+    } catch (err) {
+      setError(err.message || 'Failed to invite user');
+    }
+  };
+
+  if (loading) return <div className="loading">Loading approvals...</div>;
 
   // Filter reviews that are pending manager approval
   const managerReviews = reviews.filter(
@@ -91,6 +129,62 @@ export default function ManagerDashboard() {
     <div>
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
+      {inviteSuccess && <div className="success">{inviteSuccess}</div>}
+
+      <div className="card">
+        <h2>👥 Invite Team Members</h2>
+        <p style={{ color: '#666', marginBottom: '15px' }}>
+          Create Senior and Junior accounts for this workspace.
+        </p>
+        <form onSubmit={handleInviteUser}>
+          <div className="form-group">
+            <label>Full Name</label>
+            <input
+              name="fullName"
+              value={inviteForm.fullName}
+              onChange={handleInviteChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Username</label>
+            <input
+              name="username"
+              value={inviteForm.username}
+              onChange={handleInviteChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              name="email"
+              type="email"
+              value={inviteForm.email}
+              onChange={handleInviteChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              name="password"
+              type="password"
+              value={inviteForm.password}
+              onChange={handleInviteChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Role</label>
+            <select name="role" value={inviteForm.role} onChange={handleInviteChange}>
+              <option value="SENIOR">Senior</option>
+              <option value="JUNIOR">Junior</option>
+            </select>
+          </div>
+          <button type="submit">Invite User</button>
+        </form>
+      </div>
 
       <div className="card">
         <h2>✅ Final Approval ({managerReviews.length})</h2>
@@ -116,6 +210,25 @@ export default function ManagerDashboard() {
 
                   {isExpanded && (
                     <div style={{ marginTop: '15px' }}>
+                      {sub?.codeSnippet && (
+                        <div className="code-review-section">
+                          <h4>📄 Code to Review</h4>
+                          <pre className="code-preview">
+                            <code>{sub.codeSnippet}</code>
+                          </pre>
+                          {sub?.filesChanged && sub.filesChanged.length > 0 && (
+                            <div className="files-review">
+                              <strong>Files Changed:</strong>
+                              <ul>
+                                {sub.filesChanged.map((file, idx) => (
+                                  <li key={idx}>{file}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <textarea
                         placeholder="Enter your decision comment (optional)..."
                         value={decisionForm.overallComment}
@@ -125,7 +238,7 @@ export default function ManagerDashboard() {
                             overallComment: e.target.value,
                           })
                         }
-                        style={{ width: '100%', marginBottom: '10px' }}
+                        style={{ width: '100%', marginBottom: '10px', marginTop: '10px' }}
                       />
                     </div>
                   )}
@@ -162,6 +275,14 @@ export default function ManagerDashboard() {
           })
         )}
       </div>
+
+      {selectedSubmission && (
+        <CodeViewer
+          code={selectedSubmission.codeSnippet}
+          filesChanged={selectedSubmission.filesChanged}
+          onClose={() => setSelectedSubmission(null)}
+        />
+      )}
     </div>
   );
 }

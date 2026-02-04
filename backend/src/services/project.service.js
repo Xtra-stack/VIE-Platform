@@ -34,11 +34,14 @@ export class ProjectService {
     return Project.find({ "members.userId": userId });
   }
 
-  async listProjectsForManager() {
-    return Project.find();
+  async listProjectsForManager(companyId) {
+    if (!companyId) {
+      return Project.find();
+    }
+    return Project.find({ companyId });
   }
 
-  async getProjectForUser(projectId, userId, allowManagerAccess = false, userRole) {
+  async getProjectForUser(projectId, userId, allowManagerAccess = false, userRole, companyId = null) {
     const project = await Project.findById(projectId);
     if (!project) {
       const error = new Error("Project not found");
@@ -48,6 +51,12 @@ export class ProjectService {
 
     const isMember = project.members.some((member) => member.userId.toString() === userId);
     const isManager = allowManagerAccess && userRole === "MANAGER";
+
+    if (isManager && companyId && project.companyId.toString() !== companyId) {
+      const error = new Error("Forbidden");
+      error.status = 403;
+      throw error;
+    }
 
     if (!isMember && !isManager) {
       const error = new Error("Forbidden");

@@ -6,7 +6,7 @@ export const listProjects = async (req, res, next) => {
   try {
     const projects =
       req.user.role === "MANAGER"
-        ? await projectService.listProjectsForManager()
+        ? await projectService.listProjectsForManager(req.user.companyId || null)
         : await projectService.listProjectsForUser(req.user.id);
     return res.status(200).json({ success: true, data: projects });
   } catch (error) {
@@ -32,7 +32,8 @@ export const getProject = async (req, res, next) => {
       req.params.projectId,
       req.user.id,
       true,
-      req.user.role
+      req.user.role,
+      req.user.companyId || null
     );
     return res.status(200).json({ success: true, data: project });
   } catch (error) {

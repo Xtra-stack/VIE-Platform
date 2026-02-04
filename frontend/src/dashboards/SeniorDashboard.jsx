@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getReviews, approveReview, rejectReview, getSubmission } from '../services/api.js';
+import ReviewModal from '../components/ReviewModal.jsx';
 
 export default function SeniorDashboard() {
   const [reviews, setReviews] = useState([]);
@@ -7,7 +8,8 @@ export default function SeniorDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [expandedId, setExpandedId] = useState(null);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
 
   // Form state for review actions
@@ -41,55 +43,54 @@ export default function SeniorDashboard() {
       }
       setSubmissions(submissionsMap);
     } catch (err) {
+      console.error('Error loading reviews:', err);
       setError(err.message || 'Failed to load reviews');
+      setSubmissions({});
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (submissionId) => {
-    setActionLoading(submissionId);
-    setError('');
-    setSuccess('');
-
+  const handleApprove = async (submissionId, comment, inlineComments) => {
     try {
-      await approveReview(
-        submissionId,
-        reviewForm.overallComment || 'Approved',
-        reviewForm.inlineComments
-      );
+      await approveReview(submissionId, comment || 'Approved', inlineComments);
       setSuccess('Code approved! Escalating to Manager...');
-      setReviewForm({ submissionId: null, overallComment: '', inlineComments: [] });
       await loadData();
+      setReviewModalOpen(false);
+      setSelectedSubmission(null);
     } catch (err) {
       setError(err.message || 'Failed to approve review');
-    } finally {
-      setActionLoading(null);
+      throw err;
     }
   };
 
-  const handleReject = async (submissionId) => {
-    setActionLoading(submissionId);
-    setError('');
-    setSuccess('');
-
+  const handleReject = async (submissionId, comment, inlineComments, fileName, lineNumber) => {
     try {
-      await rejectReview(
-        submissionId,
-        reviewForm.overallComment || 'Changes requested',
-        reviewForm.inlineComments
-      );
-      setSuccess('Changes requested. Developer will update the code.');
-      setReviewForm({ submissionId: null, overallComment: '', inlineComments: [] });
+      await rejectReview(submissionId, comment || 'Changes requested', inlineComments, fileName, lineNumber);
+      setSuccess('Rejection sent. Developer will address the feedback.');
       await loadData();
+      setReviewModalOpen(false);
+      setSelectedSubmission(null);
     } catch (err) {
-      setError(err.message || 'Failed to request changes');
-    } finally {
-      setActionLoading(null);
+      setError(err.message || 'Failed to reject submission');
+      throw err;
     }
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
+  const handleComment = async (submissionId, comment, inlineComments) => {
+    console.log('Comment added:', { submissionId, comment, inlineComments });
+    return Promise.resolve();
+  };
+
+  const openReviewModal = async (review) => {
+    const sub = submissions[review.submissionId];
+    if (sub) {
+      setSelectedSubmission(sub);
+      setReviewModalOpen(true);
+    }
+  };
+
+  if (loading) return <div className="loading">Loading reviews...</div>;
 
   const pendingReviews = reviews.filter((r) => r.status === 'PENDING');
 
@@ -105,8 +106,6 @@ export default function SeniorDashboard() {
         ) : (
           pendingReviews.map((review) => {
             const sub = submissions[review.submissionId];
-            const isExpanded = expandedId === review.submissionId;
-
             return (
               <div key={review._id} className="submission-item">
                 <div className="details" style={{ flex: 1 }}>
@@ -114,74 +113,32 @@ export default function SeniorDashboard() {
                   <p>Developer: {sub?.submittedBy}</p>
                   <p>Branch: {sub?.sourceBranch} → {sub?.targetBranch}</p>
                   <p>{sub?.description}</p>
-
-                  {isExpanded && (
-                    <div style={{ marginTop: '15px' }}>
-                      <textarea
-                        placeholder="Enter your review comment..."
-                        value={reviewForm.overallComment}
-                        onChange={(e) =>
-                          setReviewForm({
-                            ...reviewForm,
-                            overallComment: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%', marginBottom: '10px' }}
-                      />
-
-                      {review.inlineComments && review.inlineComments.length > 0 && (
-                        <div className="inline-comments">
-                          <strong>Existing Comments:</strong>
-                          {review.inlineComments.map((comment, idx) => (
-                            <div key={idx} className="comment">
-                              <span className="file-name">{comment.file}</span>
-                              <span className="line-num">Line {comment.lineNumber}</span>
-                              <p>{comment.comment}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
-
                 <div className="actions">
-                  {!isExpanded ? (
-                    <button
-                      onClick={() => setExpandedId(review.submissionId)}
-                      className="secondary"
-                    >
-                      Review
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => handleApprove(review.submissionId)}
-                        disabled={actionLoading === review.submissionId}
-                      >
-                        ✓ Approve
-                      </button>
-                      <button
-                        onClick={() => handleReject(review.submissionId)}
-                        className="danger"
-                        disabled={actionLoading === review.submissionId}
-                      >
-                        ✗ Changes
-                      </button>
-                      <button
-                        onClick={() => setExpandedId(null)}
-                        className="secondary"
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  )}
+                  <button onClick={() => openReviewModal(review)} className="primary">
+                    📋 Review Code
+                  </button>
                 </div>
               </div>
             );
           })
         )}
       </div>
+
+      {reviewModalOpen && selectedSubmission && (
+        <ReviewModal
+          submission={selectedSubmission}
+          onClose={() => {
+            setReviewModalOpen(false);
+            setSelectedSubmission(null);
+          }}
+          onApprove={handleApprove}
+          onRequestChanges={handleReject}
+          onReject={handleReject}
+          onComment={handleComment}
+          userRole="SENIOR_DEV"
+        />
+      )}
     </div>
   );
 }
