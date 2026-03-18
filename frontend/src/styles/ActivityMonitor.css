@@ -1,0 +1,272 @@
+/* Activity Monitor Styling */
+.activity-monitor {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.activity-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.activity-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  background: white;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filter-select:hover,
+.filter-select:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+.btn-clear-filters {
+  padding: 8px 14px;
+  background: #ecf0f1;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  color: #7f8c8d;
+}
+
+.btn-clear-filters:hover {
+  background: #e74c3c;
+  border-color: #e74c3c;
+  color: white;
+}
+
+.activity-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.activity-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.activity-icon {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.actor-name {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.role-badge,
+.entity-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.entity-type {
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.timestamp {
+  margin-left: auto;
+  font-size: 12px;
+  color: #7f8c8d;
+  white-space: nowrap;
+}
+
+.activity-description {
+  margin: 6px 0;
+  font-size: 13px;
+  color: #34495e;
+  line-height: 1.4;
+}
+
+.activity-metadata {
+  margin-top: 8px;
+}
+
+.activity-metadata details {
+  cursor: pointer;
+}
+
+.activity-metadata summary {
+  font-size: 12px;
+  color: #3498db;
+  user-select: none;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.activity-metadata summary:hover {
+  background: #bdc3c7;
+}
+
+.activity-metadata pre {
+  margin: 8px 0 0 0;
+  padding: 8px;
+  background: #2c3e50;
+  color: #2ecc71;
+  border-radius: 4px;
+  font-size: 11px;
+  overflow-x: auto;
+  line-height: 1.3;
+}
+
+.no-activities {
+  text-align: center;
+  padding: 24px;
+  color: #7f8c8d;
+  background: white;
+  border-radius: 8px;
+  border: 1px dashed #bdc3c7;
+  font-size: 14px;
+}
+
+.activity-monitor.loading,
+.activity-monitor.error {
+  text-align: center;
+  padding: 24px;
+  color: #7f8c8d;
+}
+
+.activity-monitor.error {
+  background: #fadbd8;
+  color: #e74c3c;
+  border-radius: 8px;
+}
+
+/* Activity item color variations based on action */
+.activity-item {
+  border-left-color: #3498db;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .activity-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .activity-filters {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .filter-select,
+  .btn-clear-filters {
+    width: 100%;
+  }
+
+  .activity-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .timestamp {
+    margin-left: 0;
+    margin-top: 4px;
+  }
+
+  .activity-item {
+    gap: 8px;
+  }
+
+  .activity-monitor {
+    padding: 16px;
+  }
+}
+
+/* ---- VIE Dark Theme Overrides ---- */
+.activity-monitor {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
+}
+
+.activity-header h3,
+.activity-title {
+  color: var(--text-light);
+}
+
+.activity-description,
+.timestamp,
+.activity-meta-label {
+  color: var(--text-grey);
+}
+
+.activity-item {
+  background: var(--bg-dark-secondary);
+  border-color: var(--border-dark);
+}
+
+.filter-select {
+  background: var(--bg-dark-secondary);
+  border-color: var(--border-dark);
+  color: var(--text-light);
+}

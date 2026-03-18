@@ -9,4 +9,6 @@ export const env = {
   mongoUri: process.env.MONGODB_URI || "mongodb://localhost:27017/vie",
   jwtSecret: process.env.JWT_SECRET || "change-me",
   jwtExpiry: process.env.JWT_EXPIRY || "1d",
+  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || "change-me",
+  jwtRefreshExpiry: process.env.JWT_REFRESH_EXPIRY || "7d",
 };

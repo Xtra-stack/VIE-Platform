@@ -1,0 +1,161 @@
+/* VIE Platform Global Theme Variables */
+:root {
+  /* Dark backgrounds */
+  --bg-dark: #0f0f0f;
+  --bg-dark-secondary: #1a1a1a;
+  --card-bg: #1a1a1a;
+  --bg-card: var(--card-bg);
+  --bg-card-hover: #242424;
+  
+  /* Accents */
+  --accent-green: #00ff88;
+  --accent-green-dark: #00db75;
+  --accent-danger: #ff4444;
+  --accent-warning: #ffaa00;
+  
+  /* Text colors */
+  --text-light: #ffffff;
+  --text-grey: #b8b8b8;
+  --text-grey-dark: #787878;
+  
+  /* Borders */
+  --border-dark: #2a2a2a;
+  --border-light: #3a3a3a;
+  
+  /* Status colors */
+  --status-success: #00ff88;
+  --status-pending: #ffaa00;
+  --status-rejected: #ff4444;
+  --status-approved: #00db75;
+}
+
+/* Global reset for VIE dark theme */
+body {
+  background: var(--bg-dark);
+  color: var(--text-light);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Card styling */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  color: var(--text-light);
+  border-bottom: 2px solid var(--accent-green);
+}
+
+/* Button styling */
+button {
+  background: var(--accent-green);
+  color: var(--bg-dark);
+  border: 1px solid var(--accent-green);
+  font-weight: 600;
+}
+
+button:hover {
+  background: var(--accent-green-dark);
+}
+
+button.secondary {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-light);
+}
+
+button.secondary:hover {
+  background: var(--bg-card-hover);
+}
+
+button.danger {
+  background: var(--accent-danger);
+  border-color: var(--accent-danger);
+  color: var(--text-light);
+}
+
+button.danger:hover {
+  background: #dd3333;
+}
+
+/* Input styling */
+input, textarea, select {
+  background: var(--bg-dark-secondary);
+  border: 1px solid var(--border-dark);
+  color: var(--text-light);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-green);
+}
+
+/* Status badges */
+.status-badge {
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.awaiting,
+.status-badge.pending {
+  background: rgba(255, 170, 0, 0.2);
+  color: var(--status-pending);
+  border: 1px solid var(--status-pending);
+}
+
+.status-badge.approved {
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--status-success);
+  border: 1px solid var(--status-success);
+}
+
+.status-badge.rejected {
+  background: rgba(255, 68, 68, 0.2);
+  color: var(--status-rejected);
+  border: 1px solid var(--status-rejected);
+}
+
+/* Error and success messages */
+.error {
+  background: rgba(255, 68, 68, 0.15);
+  color: var(--accent-danger);
+  border: 1px solid var(--accent-danger);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.success {
+  background: rgba(0, 255, 136, 0.15);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+/* Header */
+header {
+  background: var(--bg-dark-secondary);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+header h1 {
+  color: var(--text-light);
+}
+
+header .role-badge {
+  background: var(--accent-green);
+  color: var(--bg-dark);
+}
+
+/* Container */
+.container {
+  background: var(--bg-dark);
+}

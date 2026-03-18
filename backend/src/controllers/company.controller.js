@@ -28,3 +28,12 @@ export const getCompany = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const completeTrial = async (req, res, next) => {
+  try {
+    const company = await companyService.completeTrial(req.params.companyId);
+    return res.status(200).json({ success: true, data: company });
+  } catch (error) {
+    return next(error);
+  }
+};

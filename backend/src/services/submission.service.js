@@ -2,8 +2,9 @@ import { CodeSubmission } from "../models/CodeSubmission.js";
 import { InternalRepository } from "../models/InternalRepository.js";
 import { Project } from "../models/Project.js";
 import { Review } from "../models/Review.js";
+import { Task } from "../models/Task.js";
 import { REVIEW_STATUS, SUBMISSION_STATUS } from "../constants/status.js";
-import { ROLES } from "../constants/roles.js";
+import { ROLES, hasRoleAtLeast } from "../constants/roles.js";
 import { ActivityLogService } from "./activitylog.service.js";
 import BuildService from "./build.service.js";
 
@@ -32,7 +33,7 @@ export class SubmissionService {
     return { codeLines: parsed, linesAdded, linesRemoved };
   }
 
-  async createSubmission({ userId, projectId, title, description, sourceBranch, targetBranch, codeSnippet, filesChanged }) {
+  async createSubmission({ userId, projectId, title, description, sourceBranch, targetBranch, codeSnippet, filesChanged, taskId = null }) {
     const project = await Project.findById(projectId);
     if (!project) {
       const error = new Error("Project not found");
@@ -45,6 +46,26 @@ export class SubmissionService {
       const error = new Error("Forbidden");
       error.status = 403;
       throw error;
+    }
+
+    let linkedTask = null;
+    if (taskId) {
+      linkedTask = await Task.findById(taskId);
+      if (!linkedTask) {
+        const error = new Error("Task not found");
+        error.status = 404;
+        throw error;
+      }
+      if (linkedTask.assignedTo.toString() !== userId) {
+        const error = new Error("Forbidden");
+        error.status = 403;
+        throw error;
+      }
+      if (linkedTask.projectId.toString() !== projectId) {
+        const error = new Error("Task does not belong to this project");
+        error.status = 400;
+        throw error;
+      }
     }
 
     const repository = await InternalRepository.findOne({ projectId, isActive: true });
@@ -65,6 +86,12 @@ export class SubmissionService {
       status: SUBMISSION_STATUS.AWAITING_REVIEW,
       buildStatus: 'PENDING',
     });
+
+    if (linkedTask) {
+      linkedTask.status = "SUBMITTED";
+      linkedTask.submissionId = submission._id;
+      await linkedTask.save();
+    }
 
     await activityLogService.logAction({
       actorId: userId,
@@ -98,7 +125,7 @@ export class SubmissionService {
   }
 
   async listSubmissions({ userId, userRole, companyId }) {
-    if (userRole === ROLES.MANAGER) {
+    if (hasRoleAtLeast(userRole, ROLES.MANAGER)) {
       if (!companyId) {
         return CodeSubmission.find().sort({ submittedAt: -1 });
       }
@@ -124,7 +151,7 @@ export class SubmissionService {
       throw error;
     }
 
-    if (userRole === ROLES.MANAGER) {
+    if (hasRoleAtLeast(userRole, ROLES.MANAGER)) {
       if (!companyId) {
         return submission;
       }
@@ -195,6 +222,13 @@ export class SubmissionService {
       previousSubmissionId: previousSubmissionId,
       buildStatus: 'PENDING',
     });
+
+    const linkedTask = await Task.findOne({ submissionId: previousSubmissionId });
+    if (linkedTask) {
+      linkedTask.status = "SUBMITTED";
+      linkedTask.submissionId = newSubmission._id;
+      await linkedTask.save();
+    }
 
     // Increment resubmission count on parent
     previousSubmission.resubmissionCount += 1;

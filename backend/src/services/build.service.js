@@ -180,13 +180,17 @@ class BuildService {
   }
 
   generateTestResults(isSuccess) {
+    const MIN_COVERAGE_THRESHOLD = 75; // 75% minimum coverage
+    
     if (!isSuccess) {
       return {
         total: 47,
         passed: 42,
         failed: 5,
         skipped: 0,
-        coverage: 73.2
+        coverage: 73.2,
+        coverageThreshold: MIN_COVERAGE_THRESHOLD,
+        passedThreshold: false
       };
     }
 
@@ -195,7 +199,9 @@ class BuildService {
       passed: 47,
       failed: 0,
       skipped: 0,
-      coverage: 87.5
+      coverage: 87.5,
+      coverageThreshold: MIN_COVERAGE_THRESHOLD,
+      passedThreshold: true
     };
   }
 

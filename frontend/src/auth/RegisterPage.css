@@ -1,0 +1,116 @@
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f0f0f;
+  padding: 20px;
+}
+
+.register-card {
+  width: 100%;
+  max-width: 560px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 32px;
+  color: #ffffff;
+}
+
+.register-kicker {
+  color: #00ff88;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.register-card h1 {
+  margin-bottom: 12px;
+  font-size: 30px;
+}
+
+.register-card p {
+  color: #bdbdbd;
+  line-height: 1.6;
+}
+
+.register-card form {
+  margin-top: 20px;
+}
+
+.register-card .form-group {
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.register-card .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #f1f1f1;
+  font-size: 14px;
+}
+
+.register-card .form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #2f2f2f;
+  background: #111111;
+  color: #ffffff;
+}
+
+.register-card .form-group input:focus {
+  outline: none;
+  border-color: #00ff88;
+}
+
+.register-card button[type="submit"] {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.register-card .error,
+.register-card .success {
+  margin-top: 12px;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.register-card .error {
+  background: rgba(239, 83, 80, 0.12);
+  border: 1px solid rgba(239, 83, 80, 0.45);
+  color: #ff8a80;
+}
+
+.register-card .success {
+  background: rgba(0, 200, 83, 0.12);
+  border: 1px solid rgba(0, 200, 83, 0.45);
+  color: #69f0ae;
+}
+
+.register-actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.register-actions button {
+  flex: 1;
+  min-width: 160px;
+}
+
+.register-actions button.secondary {
+  background: transparent;
+  border: 1px solid #3a3a3a;
+}
+
+.register-actions button.secondary:hover {
+  background: #202020;
+}
+
+@media (max-width: 640px) {
+  .register-card {
+    padding: 24px;
+  }
+}

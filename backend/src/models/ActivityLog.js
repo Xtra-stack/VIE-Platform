@@ -2,21 +2,25 @@ import mongoose from "mongoose";
 
 const activityLogSchema = new mongoose.Schema(
   {
-    actorId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    actorRole: { type: String, required: true }, // JUNIOR, SENIOR, MANAGER
-    actionType: { type: String, required: true }, // submit, review, approve, merge, deploy, login, logout
-    entityType: { type: String }, // CodeSubmission, Review, Deployment
-    entityId: { type: mongoose.Schema.Types.ObjectId }, // ID of the entity being acted upon
-    message: { type: String, required: true }, // Human-readable description
-    details: { type: mongoose.Schema.Types.Mixed }, // Additional context
-    timestamp: { type: Date, default: Date.now, immutable: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: "Workspace" },
+    role: { type: String, required: true }, // MANAGER | SENIOR | JUNIOR
+    action: { type: String, required: true }, // login, logout, task_created, task_assigned, etc.
+    entityType: { type: String, required: true }, // TASK | WORKSPACE | SUBMISSION | AUTH | COMMENT
+    entityId: { type: mongoose.Schema.Types.ObjectId },
+    description: { type: String },
+    metadata: { type: mongoose.Schema.Types.Mixed }, // Additional context (e.g., old values, new values)
+    ipAddress: { type: String },
+    userAgent: { type: String },
   },
-  { timestamps: false } // We handle timestamps manually
+  { timestamps: true } // Adds createdAt and updatedAt automatically
 );
 
-// Index for efficient querying
-activityLogSchema.index({ entityId: 1, timestamp: -1 });
-activityLogSchema.index({ actorId: 1, timestamp: -1 });
-activityLogSchema.index({ actionType: 1, timestamp: -1 });
+// Indexes for efficient querying
+activityLogSchema.index({ workspaceId: 1, createdAt: -1 });
+activityLogSchema.index({ userId: 1, createdAt: -1 });
+activityLogSchema.index({ createdAt: -1 });
+activityLogSchema.index({ action: 1, createdAt: -1 });
+activityLogSchema.index({ entityType: 1, createdAt: -1 });
 
 export const ActivityLog = mongoose.model("ActivityLog", activityLogSchema);

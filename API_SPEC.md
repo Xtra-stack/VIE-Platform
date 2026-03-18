@@ -11,6 +11,8 @@
 
 ## Authentication Endpoints
 
+> Path note: Auth endpoints are available under both `/api/auth/*` (preferred) and `/auth/*` (compatibility).
+
 ### POST /api/auth/register
 
 **Request:**

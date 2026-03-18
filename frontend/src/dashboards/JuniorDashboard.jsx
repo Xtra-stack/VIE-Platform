@@ -1,9 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { getSubmissions, createSubmission, getProjects, getSubmission, getBuildLogs, resubmitSubmission } from '../services/api.js';
+import {
+  getSubmissions,
+  createSubmission,
+  getProjects,
+  getSubmission,
+  getBuildLogs,
+  resubmitSubmission,
+  getMyTasks,
+  updateTaskStatus,
+  executeTerminalCommand,
+  getTerminalHistory,
+} from '../services/api.js';
 import CodeViewer from '../components/CodeViewer.jsx';
+import CodeDiff from '../components/CodeDiff.jsx';
+import TerminalOutput from '../components/TerminalOutput.jsx';
 import SubmissionDetailPage from '../components/SubmissionDetailPage.jsx';
 import ErrorBoundary from '../components/ErrorBoundary.jsx';
+import DashboardLayout from '../components/DashboardLayout.jsx';
+import CodeEditorPanel from '../components/CodeEditor/CodeEditorPanel.jsx';
+import SimulatedTerminal from '../components/CodeEditor/SimulatedTerminal.jsx';
+import RoleStats from '../components/RoleStats.jsx';
 import '../styles/BuildStatus.css';
+import '../styles/TerminalOutput.css';
 
 export default function JuniorDashboard() {
   const [submissions, setSubmissions] = useState([]);
@@ -17,10 +35,34 @@ export default function JuniorDashboard() {
   const [expandedBuildLogs, setExpandedBuildLogs] = useState({});
   const [buildLogs, setBuildLogs] = useState({});
   const [resubmitModal, setResubmitModal] = useState(null); // { previousSubmissionId, ... }
+  const [showCodeDiff, setShowCodeDiff] = useState(null); // submissionId for showing diff
   const [resubmitForm, setResubmitForm] = useState({
     codeSnippet: '',
     filesChanged: '',
   });
+
+  const workspaceTemplate = {
+    'src/taskSolution.js': '',
+    'src/helpers.js': '// helper functions\n',
+    'README.md': '# Task notes\n',
+  };
+
+  const [submitWorkspace, setSubmitWorkspace] = useState({
+    currentFile: 'src/taskSolution.js',
+    files: { ...workspaceTemplate },
+    showTerminal: true,
+  });
+
+  const [resubmitWorkspace, setResubmitWorkspace] = useState({
+    currentFile: 'src/taskSolution.js',
+    files: { ...workspaceTemplate },
+    showTerminal: true,
+  });
+
+  // Task management state
+  const [tasks, setTasks] = useState([]);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [taskError, setTaskError] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -35,7 +77,39 @@ export default function JuniorDashboard() {
 
   useEffect(() => {
     loadData();
+    loadTasks();
   }, []);
+
+  useEffect(() => {
+    if (selectedTask) {
+      setFormData((prev) => ({
+        ...prev,
+        projectId: selectedTask.projectId?._id || selectedTask.projectId || prev.projectId,
+        title: selectedTask.title || prev.title,
+        description: selectedTask.description || prev.description,
+      }));
+    }
+  }, [selectedTask]);
+
+  useEffect(() => {
+    setSubmitWorkspace((prev) => ({
+      ...prev,
+      files: {
+        ...prev.files,
+        [prev.currentFile]: formData.codeSnippet || '',
+      },
+    }));
+  }, [formData.codeSnippet]);
+
+  useEffect(() => {
+    setResubmitWorkspace((prev) => ({
+      ...prev,
+      files: {
+        ...prev.files,
+        [prev.currentFile]: resubmitForm.codeSnippet || '',
+      },
+    }));
+  }, [resubmitForm.codeSnippet]);
 
   const loadData = async () => {
     setLoading(true);
@@ -70,6 +144,26 @@ export default function JuniorDashboard() {
     }
   };
 
+  const loadTasks = async () => {
+    try {
+      const tasksData = await getMyTasks();
+      setTasks(tasksData || []);
+    } catch (err) {
+      console.error('Error loading tasks:', err);
+      setTaskError(err.message || 'Failed to load tasks');
+    }
+  };
+
+  const handleTaskStatusUpdate = async (taskId, newStatus) => {
+    try {
+      await updateTaskStatus(taskId, newStatus);
+      setSuccess(`Task status updated to ${newStatus}`);
+      await loadTasks();
+    } catch (err) {
+      setTaskError(err.message || 'Failed to update task status');
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -97,7 +191,8 @@ export default function JuniorDashboard() {
         formData.title,
         formData.description,
         formData.codeSnippet,
-        filesArray
+        filesArray,
+        selectedTask?._id || null
       );
       setSuccess('Submission created successfully! Build started automatically.');
       setFormData({
@@ -109,7 +204,14 @@ export default function JuniorDashboard() {
         codeSnippet: '',
         filesChanged: '',
       });
+      setSubmitWorkspace({
+        currentFile: 'src/taskSolution.js',
+        files: { ...workspaceTemplate },
+        showTerminal: true,
+      });
+      setSelectedTask(null);
       await loadData();
+      await loadTasks();
     } catch (err) {
       setError(err.message || 'Failed to create submission');
     } finally {
@@ -125,14 +227,24 @@ export default function JuniorDashboard() {
   };
 
   const handleResubmitClick = (submission) => {
+    const originalCode = submission.codeSnippet || '';
     setResubmitModal({
       previousSubmissionId: submission._id,
       title: submission.title,
       rejection: submission.rejectionFeedback,
+      originalCode,
     });
     setResubmitForm({
-      codeSnippet: '',
+      codeSnippet: originalCode,
       filesChanged: '',
+    });
+    setResubmitWorkspace({
+      currentFile: 'src/taskSolution.js',
+      files: {
+        ...workspaceTemplate,
+        'src/taskSolution.js': originalCode,
+      },
+      showTerminal: true,
     });
   };
 
@@ -183,13 +295,181 @@ export default function JuniorDashboard() {
 
   if (loading) return <div className="loading">Loading dashboard...</div>;
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'ASSIGNED': return '#2196F3';
+      case 'IN_PROGRESS': return '#FF9800';
+      case 'SUBMITTED': return '#9C27B0';
+      case 'CHANGES_REQUESTED': return '#F44336';
+      case 'APPROVED': return '#4CAF50';
+      default: return '#757575';
+    }
+  };
+
+  const submitFileList = Object.keys(submitWorkspace.files || {});
+  const resubmitFileList = Object.keys(resubmitWorkspace.files || {});
+
+  const handleSubmitFileSelect = (fileName) => {
+    setSubmitWorkspace((prev) => ({ ...prev, currentFile: fileName }));
+    setFormData((prev) => ({
+      ...prev,
+      codeSnippet: submitWorkspace.files[fileName] || '',
+    }));
+  };
+
+  const handleSubmitCodeChange = (newContent) => {
+    setSubmitWorkspace((prev) => ({
+      ...prev,
+      files: {
+        ...prev.files,
+        [prev.currentFile]: newContent,
+      },
+    }));
+    setFormData((prev) => ({ ...prev, codeSnippet: newContent }));
+  };
+
+  const handleResubmitFileSelect = (fileName) => {
+    setResubmitWorkspace((prev) => ({ ...prev, currentFile: fileName }));
+    setResubmitForm((prev) => ({
+      ...prev,
+      codeSnippet: resubmitWorkspace.files[fileName] || '',
+    }));
+  };
+
+  const handleResubmitCodeChange = (newContent) => {
+    setResubmitWorkspace((prev) => ({
+      ...prev,
+      files: {
+        ...prev.files,
+        [prev.currentFile]: newContent,
+      },
+    }));
+    setResubmitForm((prev) => ({ ...prev, codeSnippet: newContent }));
+  };
+
+  const executeWorkspaceCommand = async (command, sessionId) => {
+    return await executeTerminalCommand(command, sessionId);
+  };
+
+  const loadWorkspaceTerminalHistory = async (sessionId) => {
+    const terminalData = await getTerminalHistory(100);
+    return (terminalData.history || []).filter((entry) => entry.sessionId === sessionId);
+  };
+
   return (
+    <DashboardLayout
+      title="Junior Developer Dashboard"
+      subtitle="Build, submit, and improve through review cycles"
+    >
     <div>
+      <RoleStats role="JUNIOR" />
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
+      {taskError && <div className="error">{taskError}</div>}
+
+      {/* Assigned Tasks Section */}
+      <div className="card">
+        <h2>📋 Assigned Tasks</h2>
+        <p style={{ color: 'var(--text-grey)', marginBottom: '15px' }}>
+          Your assigned workspace tasks with status tracking.
+        </p>
+
+        {tasks.length === 0 ? (
+          <p style={{ color: 'var(--text-grey-dark)' }}>No tasks assigned yet.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {tasks.map((task) => (
+              <div 
+                key={task._id} 
+                style={{ 
+                  padding: '15px', 
+                  border: '1px solid var(--border-dark)', 
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--bg-dark-secondary)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ margin: '0 0 8px 0' }}>{task.title}</h3>
+                    <p style={{ margin: '5px 0', fontSize: '14px', color: 'var(--text-grey)' }}>
+                      {task.description}
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                      <span style={{ 
+                        padding: '4px 12px', 
+                        background: '#e3f2fd', 
+                        borderRadius: '12px', 
+                        fontSize: '12px',
+                        fontWeight: '500'
+                      }}>
+                        {task.projectType}
+                      </span>
+                      <span style={{ 
+                        padding: '4px 12px', 
+                        background: '#f3e5f5', 
+                        borderRadius: '12px', 
+                        fontSize: '12px',
+                        fontWeight: '500'
+                      }}>
+                        {task.techArea}
+                      </span>
+                      <span style={{ 
+                        padding: '4px 12px', 
+                        background: getStatusColor(task.status), 
+                        color: 'white',
+                        borderRadius: '12px', 
+                        fontSize: '12px',
+                        fontWeight: '500'
+                      }}>
+                        {task.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {task.status === 'ASSIGNED' && (
+                      <button 
+                        onClick={() => handleTaskStatusUpdate(task._id, 'IN_PROGRESS')}
+                        style={{ padding: '6px 12px', fontSize: '13px' }}
+                      >
+                        Start Work
+                      </button>
+                    )}
+                    {task.status === 'IN_PROGRESS' && (
+                      <button 
+                        onClick={() => setSelectedTask(task)}
+                        style={{ padding: '6px 12px', fontSize: '13px' }}
+                      >
+                        Submit Code
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="card">
         <h2>📤 Submit Code</h2>
+        {selectedTask && (
+          <div style={{
+            marginBottom: '16px',
+            padding: '12px 16px',
+            borderRadius: '10px',
+            background: 'rgba(61, 220, 151, 0.12)',
+            border: '1px solid rgba(61, 220, 151, 0.25)',
+          }}>
+            <strong>Submitting for task:</strong> {selectedTask.title}
+            <button
+              type="button"
+              onClick={() => setSelectedTask(null)}
+              style={{ marginLeft: '12px', padding: '4px 10px', fontSize: '12px' }}
+            >
+              Clear
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Project</label>
@@ -253,30 +533,61 @@ export default function JuniorDashboard() {
           </div>
 
           <div className="form-group">
-            <label>Code Snippet</label>
-            <textarea
-              name="codeSnippet"
-              placeholder="Paste your code here..."
-              value={formData.codeSnippet}
-              onChange={handleInputChange}
-              rows="12"
-              className="code-input"
+            <label>💻 Coding Environment</label>
+            <p style={{ color: 'var(--text-grey)', marginBottom: '10px' }}>
+              Work in a file-based editor with terminal simulation before submitting.
+            </p>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+              {submitFileList.map((fileName) => (
+                <button
+                  key={fileName}
+                  type="button"
+                  className={submitWorkspace.currentFile === fileName ? '' : 'secondary'}
+                  onClick={() => handleSubmitFileSelect(fileName)}
+                >
+                  {fileName}
+                </button>
+              ))}
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setSubmitWorkspace((prev) => ({ ...prev, showTerminal: !prev.showTerminal }))}
+              >
+                {submitWorkspace.showTerminal ? 'Hide Terminal' : 'Show Terminal'}
+              </button>
+            </div>
+
+            <CodeEditorPanel
+              currentFile={submitWorkspace.currentFile}
+              content={submitWorkspace.files[submitWorkspace.currentFile] || ''}
+              onChange={handleSubmitCodeChange}
+              language="javascript"
             />
+
+            {submitWorkspace.showTerminal && (
+              <div style={{ marginTop: '12px' }}>
+                <SimulatedTerminal
+                  sessionId="junior-submit"
+                  onExecuteCommand={executeWorkspaceCommand}
+                  onLoadHistory={loadWorkspaceTerminalHistory}
+                />
+              </div>
+            )}
           </div>
 
           <div className="form-group">
-            <label>Files Changed (one per line)</label>
+            <label>📁 Files Changed (one per line)</label>
             <textarea
               name="filesChanged"
-              placeholder="src/auth.js&#10;src/utils/helpers.js&#10;tests/auth.test.js"
+              placeholder="src/taskSolution.js&#10;src/helpers.js&#10;README.md"
               value={formData.filesChanged}
               onChange={handleInputChange}
               rows="4"
             />
           </div>
 
-          <button type="submit" disabled={submitting}>
-            {submitting ? 'Submitting...' : 'Submit Code'}
+          <button type="submit" disabled={submitting} style={{ marginTop: '12px' }}>
+            {submitting ? '⏳ Submitting...' : '✅ Submit Code'}
           </button>
         </form>
       </div>
@@ -339,7 +650,15 @@ export default function JuniorDashboard() {
                           <span className="test-results">
                             🧪 {latestBuild.testResults.passed}/{latestBuild.testResults.total} tests passed
                             {latestBuild.testResults.coverage && (
-                              <> · {latestBuild.testResults.coverage}% coverage</>
+                              <> · <span style={{ 
+                                color: latestBuild.testResults.passedThreshold === false ? '#f44336' : 'inherit',
+                                fontWeight: latestBuild.testResults.passedThreshold === false ? 'bold' : 'normal'
+                              }}>
+                                {latestBuild.testResults.coverage}% coverage
+                                {latestBuild.testResults.passedThreshold === false && 
+                                  ` (⚠️ Min: ${latestBuild.testResults.coverageThreshold}%)`
+                                }
+                              </span></>
                             )}
                           </span>
                         )}
@@ -369,9 +688,12 @@ export default function JuniorDashboard() {
                       )}
 
                       {isExpanded && latestBuild.logs && (
-                        <pre className="build-logs">
-                          <code>{latestBuild.logs}</code>
-                        </pre>
+                        <>
+                          <pre className="build-logs">
+                            <code>{latestBuild.logs}</code>
+                          </pre>
+                          <TerminalOutput logs={latestBuild.logs} title="Build Logs" />
+                        </>
                       )}
                     </div>
                   )}
@@ -400,6 +722,14 @@ export default function JuniorDashboard() {
                           📊 Full Details
                         </button>
                       </>
+                    )}
+                    {sub.previousSubmission && (
+                      <button
+                        className="btn-secondary"
+                        onClick={() => setShowCodeDiff(sub._id)}
+                      >
+                        🔀 View Diff
+                      </button>
                     )}
                   </div>
                 </div>
@@ -452,20 +782,64 @@ export default function JuniorDashboard() {
 
             <form onSubmit={handleResubmit}>
               <div className="form-group">
-                <label>Updated Code Snippet</label>
-                <textarea
-                  placeholder="Paste your updated code here..."
-                  value={resubmitForm.codeSnippet}
-                  onChange={(e) => setResubmitForm({...resubmitForm, codeSnippet: e.target.value})}
-                  rows="12"
-                  className="code-input"
+                <label>💻 Updated Coding Environment</label>
+                <p style={{ color: 'var(--text-grey)', marginBottom: '10px' }}>
+                  Edit your previous code in the workspace environment and resubmit.
+                </p>
+
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                  {resubmitFileList.map((fileName) => (
+                    <button
+                      key={fileName}
+                      type="button"
+                      className={resubmitWorkspace.currentFile === fileName ? '' : 'secondary'}
+                      onClick={() => handleResubmitFileSelect(fileName)}
+                    >
+                      {fileName}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => setResubmitWorkspace((prev) => ({ ...prev, showTerminal: !prev.showTerminal }))}
+                  >
+                    {resubmitWorkspace.showTerminal ? 'Hide Terminal' : 'Show Terminal'}
+                  </button>
+                </div>
+
+                <CodeEditorPanel
+                  currentFile={resubmitWorkspace.currentFile}
+                  content={resubmitWorkspace.files[resubmitWorkspace.currentFile] || ''}
+                  onChange={handleResubmitCodeChange}
+                  language="javascript"
                 />
+
+                {resubmitWorkspace.showTerminal && (
+                  <div style={{ marginTop: '12px' }}>
+                    <SimulatedTerminal
+                      sessionId={`junior-resubmit-${resubmitModal.previousSubmissionId}`}
+                      onExecuteCommand={executeWorkspaceCommand}
+                      onLoadHistory={loadWorkspaceTerminalHistory}
+                    />
+                  </div>
+                )}
               </div>
 
+              {resubmitModal.originalCode && (
+                <div className="form-group">
+                  <label>🔀 Old vs Updated Code</label>
+                  <CodeDiff
+                    oldCode={resubmitModal.originalCode}
+                    newCode={resubmitForm.codeSnippet}
+                    title="Resubmission Changes"
+                  />
+                </div>
+              )}
+
               <div className="form-group">
-                <label>Updated Files Changed (one per line)</label>
+                <label>📁 Updated Files Changed (one per line)</label>
                 <textarea
-                  placeholder="List updated files..."
+                  placeholder="src/taskSolution.js&#10;src/helpers.js"
                   value={resubmitForm.filesChanged}
                   onChange={(e) => setResubmitForm({...resubmitForm, filesChanged: e.target.value})}
                   rows="4"
@@ -477,12 +851,32 @@ export default function JuniorDashboard() {
                   Cancel
                 </button>
                 <button type="submit" className="btn-success" disabled={submitting}>
-                  {submitting ? 'Submitting...' : 'Submit Updated Code'}
+                  {submitting ? '⏳ Submitting...' : '✅ Submit Updated Code'}
                 </button>
               </div>
             </form>
           </div>
         </div>
+      )}
+
+      {/* Code Diff Modal */}
+      {showCodeDiff && submissions.find(s => s._id === showCodeDiff) && (
+        <div className="code-diff-modal-overlay" onClick={() => setShowCodeDiff(null)}>
+          <div className="code-diff-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="code-diff-modal-header">
+              <h2>Code Changes Comparison</h2>
+              <button className="modal-close" onClick={() => setShowCodeDiff(null)}>✕</button>
+            </div>
+            <div className="code-diff-modal-body">
+              <CodeDiff
+                oldCode={submissions.find(s => s._id === showCodeDiff)?.previousSubmission?.codeSnippet || ''}
+                newCode={submissions.find(s => s._id === showCodeDiff)?.codeSnippet || ''}
+                title="Changes in this submission"
+              />
+            </div>
+          </div>
+        </div>
       )}    </div>
+    </DashboardLayout>
   );
 }

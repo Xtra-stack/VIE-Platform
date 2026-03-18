@@ -14,7 +14,34 @@ const reviewSchema = new mongoose.Schema(
 			default: REVIEW_STATUS.PENDING,
 		},
 
+		// Code quality scores
+		scores: {
+			codeQuality: { type: Number, min: 0, max: 10, default: 0 },
+			readability: { type: Number, min: 0, max: 10, default: 0 },
+			functionality: { type: Number, min: 0, max: 10, default: 0 },
+			efficiency: { type: Number, min: 0, max: 10, default: 0 },
+			documentation: { type: Number, min: 0, max: 10, default: 0 }
+		},
+
+		// General feedback
+		feedback: { type: String, trim: true },
 		overallComment: { type: String, trim: true },
+		
+		// Specific issues identified
+		issues: [
+			{
+				type: String,
+				category: String, // 'bug', 'style', 'performance', 'security'
+				severity: String   // 'low', 'medium', 'high'
+			}
+		],
+
+		// Rejection details
+		rejectionReason: { type: String, trim: true },
+		rejectedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+		// Approval tracking
+		approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 		
 		// Line-level comments with suggestions
 		lineComments: [
@@ -56,6 +83,7 @@ const reviewSchema = new mongoose.Schema(
 		requestedAt: { type: Date, default: Date.now },
 		startedAt: { type: Date },
 		completedAt: { type: Date },
+		reviewedAt: { type: Date },
 		
 		// Manager-specific fields
 		managerComment: { type: String, trim: true },

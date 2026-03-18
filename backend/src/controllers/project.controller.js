@@ -1,11 +1,12 @@
 import { ProjectService } from "../services/project.service.js";
+import { ROLES, hasRoleAtLeast } from "../constants/roles.js";
 
 const projectService = new ProjectService();
 
 export const listProjects = async (req, res, next) => {
   try {
     const projects =
-      req.user.role === "MANAGER"
+      hasRoleAtLeast(req.user.role, ROLES.MANAGER)
         ? await projectService.listProjectsForManager(req.user.companyId || null)
         : await projectService.listProjectsForUser(req.user.id);
     return res.status(200).json({ success: true, data: projects });

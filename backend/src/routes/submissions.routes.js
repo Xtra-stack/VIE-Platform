@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createSubmission, getSubmission, listSubmissions, mergeSubmission, deploySubmission, resubmitSubmission } from "../controllers/submission.controller.js";
 import { requireAuth } from "../middleware/auth.js";
-import { requireRole } from "../middleware/rbac.js";
+import { requireMinRole, requireRole } from "../middleware/rbac.js";
 import { ROLES } from "../constants/roles.js";
 import { notImplemented } from "../utils/notImplemented.js";
 import { ActivityLogService } from "../services/activitylog.service.js";
@@ -14,7 +14,7 @@ router.post("/", requireAuth, requireRole(ROLES.JUNIOR), createSubmission);
 router.get("/:submissionId", requireAuth, getSubmission);
 router.post("/:submissionId/resubmit", requireAuth, requireRole(ROLES.JUNIOR), resubmitSubmission);
 router.post("/:submissionId/merge", requireAuth, requireRole(ROLES.MANAGER), mergeSubmission);
-router.post("/:submissionId/deploy", requireAuth, requireRole(ROLES.MANAGER), deploySubmission);
+router.post("/:submissionId/deploy", requireAuth, requireMinRole(ROLES.MANAGER), deploySubmission);
 router.get("/:submissionId/activity", requireAuth, async (req, res, next) => {
   try {
     const activity = await activityLogService.getActivityLog(req.params.submissionId);

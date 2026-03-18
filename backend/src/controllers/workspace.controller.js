@@ -1,5 +1,6 @@
 import { WorkspaceService } from "../services/workspace.service.js";
 import { ROLES } from "../constants/roles.js";
+import { canInviteRole } from "../constants/roles.js";
 
 const workspaceService = new WorkspaceService();
 
@@ -59,10 +60,80 @@ export const inviteUser = async (req, res, next) => {
       });
     }
 
+    if (!canInviteRole(req.user.role, role)) {
+      return res.status(403).json({
+        success: false,
+        error: "Forbidden",
+      });
+    }
+
     const result = await workspaceService.inviteUser({
       companyId,
       managerId: req.user.id,
       user: { username, email, password, fullName, role },
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createInviteCode = async (req, res, next) => {
+  try {
+    const { companyId } = req.params;
+    const { role, email, expiresInHours } = req.body || {};
+
+    if (!role) {
+      return res.status(400).json({
+        success: false,
+        error: "role is required",
+      });
+    }
+
+    if (req.user.companyId !== companyId) {
+      return res.status(403).json({
+        success: false,
+        error: "Forbidden",
+      });
+    }
+
+    const invite = await workspaceService.createInviteCode({
+      companyId,
+      inviterId: req.user.id,
+      inviterRole: req.user.role,
+      role,
+      email,
+      expiresInHours,
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: invite,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const joinOrganizationByInvite = async (req, res, next) => {
+  try {
+    const { inviteCode } = req.params;
+    const { username, email, password, fullName } = req.body || {};
+
+    if (!username || !email || !password || !fullName) {
+      return res.status(400).json({
+        success: false,
+        error: "username, email, password, and fullName are required",
+      });
+    }
+
+    const result = await workspaceService.joinWithInvite({
+      inviteCode,
+      user: { username, email, password, fullName },
     });
 
     return res.status(201).json({

@@ -7,15 +7,23 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "seed:career-mentorship": "node scripts/seed-career-mentorship.js",
+    "seed:demo-users": "node scripts/seed-demo-users.js",
+    "test:auth-flow": "node scripts/auth-flow-test.js",
+    "tokens:demo": "node scripts/generate-demo-tokens.js",
+    "test:progression": "node scripts/progression-test.js",
+    "test:mentorship": "node scripts/mentorship-test.js"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.8.3"
+    "mongoose": "^8.8.3",
+    "nodemailer": "^8.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

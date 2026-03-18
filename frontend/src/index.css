@@ -6,38 +6,39 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  background: #f5f5f5;
-  color: #333;
+  background: var(--bg-dark);
+  color: var(--text-light);
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  background: var(--bg-dark);
 }
 
 header {
-  background: white;
-  border-bottom: 1px solid #ddd;
+  background: var(--bg-dark-secondary);
+  border-bottom: 1px solid var(--border-dark);
   padding: 20px;
   margin-bottom: 30px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 header h1 {
   font-size: 24px;
   margin-bottom: 10px;
+  color: var(--text-light);
 }
 
 header .user-info {
   font-size: 14px;
-  color: #666;
+  color: var(--text-grey);
 }
 
 header .role-badge {
   display: inline-block;
-  background: #007bff;
-  color: white;
+  background: var(--accent-green);
+  color: var(--bg-dark);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
@@ -46,63 +47,70 @@ header .role-badge {
 }
 
 button {
-  background: #007bff;
-  color: white;
-  border: none;
+  background: var(--accent-green);
+  color: var(--bg-dark);
+  border: 1px solid var(--accent-green);
   padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 600;
   transition: background 0.3s;
 }
 
 button:hover {
-  background: #0056b3;
+  background: var(--accent-green-dark);
 }
 
 button.danger {
-  background: #dc3545;
+  background: var(--accent-danger);
+  border-color: var(--accent-danger);
+  color: var(--text-light);
 }
 
 button.danger:hover {
-  background: #c82333;
+  background: #dd3333;
 }
 
 button.secondary {
-  background: #6c757d;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-light);
 }
 
 button.secondary:hover {
-  background: #5a6268;
+  background: var(--bg-card-hover);
 }
 
 input, textarea, select {
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-dark);
   border-radius: 4px;
   font-family: inherit;
   font-size: 14px;
+  background: var(--bg-dark-secondary);
+  color: var(--text-light);
 }
 
-textarea {
-  min-height: 150px;
-  resize: vertical;
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-green);
 }
 
 .card {
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
   border-radius: 4px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .card h2 {
   font-size: 18px;
   margin-bottom: 15px;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid var(--accent-green);
   padding-bottom: 10px;
+  color: var(--text-light);
 }
 
 .form-group {
@@ -131,28 +139,32 @@ textarea {
 }
 
 .status-badge.awaiting {
-  background: #fff3cd;
-  color: #856404;
+  background: rgba(255, 170, 0, 0.2);
+  color: var(--status-pending);
+  border: 1px solid var(--status-pending);
 }
 
 .status-badge.approved {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--status-success);
+  border: 1px solid var(--status-success);
 }
 
 .status-badge.rejected {
-  background: #f8d7da;
-  color: #721c24;
+  background: rgba(255, 68, 68, 0.2);
+  color: var(--status-rejected);
+  border: 1px solid var(--status-rejected);
 }
 
 .status-badge.pending {
-  background: #cce5ff;
-  color: #004085;
+  background: rgba(255, 170, 0, 0.2);
+  color: var(--status-pending);
+  border: 1px solid var(--status-pending);
 }
 
 .submission-item {
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
   border-radius: 4px;
   padding: 15px;
   margin-bottom: 15px;
@@ -163,11 +175,12 @@ textarea {
 
 .submission-item .details h3 {
   margin-bottom: 5px;
+  color: var(--text-light);
 }
 
 .submission-item .details p {
   font-size: 12px;
-  color: #666;
+  color: var(--text-grey);
   margin: 3px 0;
 }
 
@@ -177,32 +190,32 @@ textarea {
 }
 
 .error {
-  background: #f8d7da;
-  color: #721c24;
+  background: rgba(255, 68, 68, 0.15);
+  color: var(--accent-danger);
   padding: 12px;
   border-radius: 4px;
   margin-bottom: 20px;
-  border: 1px solid #f5c6cb;
+  border: 1px solid var(--accent-danger);
 }
 
 .success {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(0, 255, 136, 0.15);
+  color: var(--accent-green);
   padding: 12px;
   border-radius: 4px;
   margin-bottom: 20px;
-  border: 1px solid #c3e6cb;
+  border: 1px solid var(--accent-green);
 }
 
 .loading {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--text-grey);
 }
 
 .inline-comments {
-  background: #f9f9f9;
-  border-left: 3px solid #007bff;
+  background: var(--bg-dark-secondary);
+  border-left: 3px solid var(--accent-green);
   padding: 12px;
   margin-top: 10px;
   font-size: 12px;
@@ -211,7 +224,8 @@ textarea {
 .inline-comments .comment {
   margin-bottom: 10px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-dark);
+  color: var(--text-light);
 }
 
 .inline-comments .comment:last-child {
@@ -221,13 +235,13 @@ textarea {
 }
 
 .inline-comments .line-num {
-  color: #999;
+  color: var(--accent-green);
   font-weight: bold;
   margin-right: 5px;
 }
 
 .inline-comments .file-name {
-  color: #666;
+  color: var(--text-grey);
   font-size: 11px;
 }
 /* Code Viewer Styles */
@@ -237,7 +251,7 @@ textarea {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -246,13 +260,13 @@ textarea {
 }
 
 .code-viewer-modal .modal-content {
-  background: white;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
   border-radius: 8px;
   width: 100%;
   max-width: 900px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .modal-header {
@@ -260,14 +274,15 @@ textarea {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #ddd;
-  background: #f9f9f9;
+  border-bottom: 1px solid var(--border-dark);
+  background: var(--bg-dark-secondary);
 }
 
 .modal-header h2 {
   margin: 0;
   border: none;
   padding: 0;
+  color: var(--text-light);
 }
 
 .close-btn {
@@ -275,20 +290,22 @@ textarea {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #666;
+  color: var(--text-grey);
   padding: 0;
   width: 30px;
   height: 30px;
 }
 
 .close-btn:hover {
-  color: #000;
-  background: #f0f0f0;
+  color: var(--text-light);
+  background: var(--bg-card-hover);
   border-radius: 4px;
 }
 
 .modal-body {
   padding: 20px;
+  background: var(--bg-card);
+  color: var(--text-light);
 }
 
 .files-section {
@@ -297,21 +314,22 @@ textarea {
 
 .files-section h3 {
   margin-bottom: 10px;
-  color: #333;
+  color: var(--text-light);
 }
 
 .files-list {
-  background: #f5f5f5;
+  background: var(--bg-dark-secondary);
   padding: 15px 20px;
   border-radius: 4px;
   list-style-position: inside;
+  border: 1px solid var(--border-dark);
 }
 
 .files-list li {
   margin: 5px 0;
   font-family: 'Courier New', monospace;
   font-size: 13px;
-  color: #555;
+  color: var(--accent-green);
 }
 
 .code-section {
@@ -385,10 +403,10 @@ textarea {
 }
 
 .no-code {
-  background: #f9f9f9;
+  background: var(--bg-dark-secondary);
   padding: 15px;
   border-radius: 4px;
-  color: #999;
+  color: var(--text-grey-dark);
   font-style: italic;
 }
 
@@ -400,8 +418,8 @@ textarea {
 
 /* Code review sections */
 .code-review-section {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
+  background: var(--bg-dark-secondary);
+  border: 1px solid var(--border-dark);
   border-radius: 4px;
   padding: 15px;
   margin-bottom: 15px;
@@ -409,7 +427,7 @@ textarea {
 
 .code-review-section h4 {
   margin-bottom: 10px;
-  color: #333;
+  color: var(--text-light);
 }
 
 .code-preview {
@@ -433,9 +451,9 @@ textarea {
 }
 
 .files-review {
-  background: white;
+  background: var(--bg-card);
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-dark);
   border-radius: 4px;
   margin-top: 10px;
 }
@@ -443,7 +461,7 @@ textarea {
 .files-review strong {
   display: block;
   margin-bottom: 8px;
-  color: #333;
+  color: var(--text-light);
 }
 
 .files-review ul {
@@ -453,38 +471,38 @@ textarea {
 
 .files-review li {
   padding: 4px 8px;
-  background: #f5f5f5;
+  background: var(--bg-dark-secondary);
   margin: 4px 0;
   border-radius: 3px;
   font-family: 'Courier New', monospace;
   font-size: 12px;
-  color: #555;
+  color: var(--text-grey);
 }
 
 /* View Code Button */
 .view-code-btn {
-  background: #28a745;
+  background: var(--accent-green);
   padding: 8px 16px;
   font-size: 13px;
   margin-top: 10px;
 }
 
 .view-code-btn:hover {
-  background: #218838;
+  background: var(--accent-green-dark);
 }
 
 /* Activity Timeline Styles */
 .activity-timeline {
   margin: 20px 0;
-  background: white;
+  background: var(--bg-card);
   padding: 20px;
   border-radius: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-dark);
 }
 
 .activity-timeline h3 {
   margin-bottom: 20px;
-  color: #333;
+  color: var(--text-light);
 }
 
 .timeline {

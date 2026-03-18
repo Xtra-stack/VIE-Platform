@@ -21,6 +21,7 @@ router.get('/:submissionId', requireAuth, async (req, res) => {
     console.error('Get builds error:', error);
     res.status(500).json({
       success: false,
+      error: error.message || 'Failed to fetch build logs',
       message: error.message || 'Failed to fetch build logs'
     });
   }
@@ -38,6 +39,7 @@ router.get('/log/:buildId', requireAuth, async (req, res) => {
     if (!build) {
       return res.status(404).json({
         success: false,
+        error: 'Build log not found',
         message: 'Build log not found'
       });
     }
@@ -50,6 +52,7 @@ router.get('/log/:buildId', requireAuth, async (req, res) => {
     console.error('Get build log error:', error);
     res.status(500).json({
       success: false,
+      error: error.message || 'Failed to fetch build log',
       message: error.message || 'Failed to fetch build log'
     });
   }
@@ -62,7 +65,7 @@ router.get('/log/:buildId', requireAuth, async (req, res) => {
 router.post('/:submissionId/retry', requireAuth, async (req, res) => {
   try {
     const { submissionId } = req.params;
-    const userId = req.user.userId;
+    const userId = req.user.id;
     
     const newBuild = await BuildService.triggerBuild(submissionId, userId, 'FULL');
     
@@ -75,6 +78,7 @@ router.post('/:submissionId/retry', requireAuth, async (req, res) => {
     console.error('Retry build error:', error);
     res.status(500).json({
       success: false,
+      error: error.message || 'Failed to retry build',
       message: error.message || 'Failed to retry build'
     });
   }
@@ -97,6 +101,7 @@ router.get('/:submissionId/preview', requireAuth, async (req, res) => {
     console.error('Generate preview error:', error);
     res.status(404).json({
       success: false,
+      error: error.message || 'Preview not available',
       message: error.message || 'Preview not available'
     });
   }

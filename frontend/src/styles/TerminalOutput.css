@@ -1,0 +1,110 @@
+/* Terminal Output Styles */
+.terminal-output-container {
+  background-color: #0d1117;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  color: #c9d1d9;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-dark);
+  font-weight: 600;
+}
+
+.terminal-icon {
+  font-size: 14px;
+}
+
+.terminal-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.terminal-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.terminal-prompt {
+  color: #3fb950;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.terminal-text {
+  flex: 1;
+  word-break: break-word;
+  white-space: pre-wrap;
+  color: #c9d1d9;
+}
+
+.terminal-text.error {
+  color: #f85149;
+}
+
+.terminal-text.success {
+  color: #3fb950;
+}
+
+.terminal-text.warning {
+  color: #d29922;
+}
+
+.terminal-text.info {
+  color: #58a6ff;
+}
+
+.terminal-footer {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-dark);
+  font-size: 11px;
+  color: #6e7681;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.terminal-time {
+  user-select: none;
+}
+
+/* Scrollbar styling */
+.terminal-output-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.terminal-output-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.terminal-output-container::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+.terminal-output-container::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .terminal-output-container {
+    font-size: 11px;
+    padding: 12px;
+  }
+}

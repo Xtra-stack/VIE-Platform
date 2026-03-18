@@ -447,6 +447,54 @@
   background: #e68900 !important;
 }
 
+/* Code Diff Modal Styles */
+.code-diff-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  backdrop-filter: blur(4px);
+  padding: 20px;
+}
+
+.code-diff-modal {
+  background: #1e1e1e;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.code-diff-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 2px solid #333;
+  background: #252525;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.code-diff-modal-header h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 20px;
+}
+
+.code-diff-modal-body {
+  padding: 24px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .build-status-header {
@@ -476,5 +524,10 @@
 
   .resubmit-actions button {
     width: 100%;
+  }
+
+  .code-diff-modal {
+    width: 95%;
+    max-height: 85vh;
   }
 }

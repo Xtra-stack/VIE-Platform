@@ -3,38 +3,62 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-dark);
+  padding: 20px;
 }
 
 .login-card {
-  background: white;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
   padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
+  color: var(--text-light);
 }
 
 .login-card h1 {
   text-align: center;
-  color: #667eea;
+  color: var(--accent-green);
   font-size: 32px;
   margin-bottom: 5px;
+  letter-spacing: 2px;
 }
 
 .login-card p {
   text-align: center;
-  color: #666;
+  color: var(--text-grey);
   margin-bottom: 30px;
   font-size: 14px;
 }
 
 .login-card form {
-  margin-bottom: 30px;
+  margin-bottom: 0;
 }
 
 .login-card .form-group {
   margin-bottom: 15px;
+}
+
+.remember-row {
+  margin-bottom: 15px;
+}
+
+.remember-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-grey);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.remember-checkbox input {
+  margin: 0;
+}
+
+.login-card .form-group label {
+  color: var(--text-light);
 }
 
 .login-card button {
@@ -45,35 +69,32 @@
 }
 
 .login-card button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.demo-credentials {
-  background: #f0f4ff;
-  padding: 15px;
-  border-radius: 4px;
-  border-left: 4px solid #667eea;
+.helper-links {
+  margin-top: 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.demo-credentials p {
-  margin: 5px 0;
-  font-size: 12px;
-  text-align: left;
+.link-button {
+  background: transparent;
+  border: none;
+  color: var(--accent-green);
+  font-size: 13px;
+  cursor: pointer;
 }
 
-.demo-credentials strong {
-  color: #667eea;
+.link-button:hover {
+  text-decoration: underline;
 }
 
-.login-links {
-  margin-top: 20px;
-}
-
-.login-links button.secondary {
-  background: #6c757d;
-}
-
-.login-links button.secondary:hover {
-  background: #5a6268;
+@media (max-width: 640px) {
+  .login-card {
+    padding: 24px;
+  }
 }

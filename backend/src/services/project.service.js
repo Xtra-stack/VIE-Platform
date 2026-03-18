@@ -1,6 +1,6 @@
 import { Project } from "../models/Project.js";
 import { RepositoryService } from "./repository.service.js";
-import { ROLES } from "../constants/roles.js";
+import { ROLES, hasRoleAtLeast } from "../constants/roles.js";
 
 export class ProjectService {
   constructor() {
@@ -50,7 +50,7 @@ export class ProjectService {
     }
 
     const isMember = project.members.some((member) => member.userId.toString() === userId);
-    const isManager = allowManagerAccess && userRole === "MANAGER";
+    const isManager = allowManagerAccess && hasRoleAtLeast(userRole, ROLES.MANAGER);
 
     if (isManager && companyId && project.companyId.toString() !== companyId) {
       const error = new Error("Forbidden");

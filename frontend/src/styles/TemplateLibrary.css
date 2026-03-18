@@ -1,0 +1,7 @@
+.template-library { padding: 18px; }
+.template-list { display:flex; gap:12px; flex-wrap:wrap; }
+.template-card { background:#fff; border:1px solid #e6e6e6; padding:12px; border-radius:8px; min-width:220px; }
+.template-desc { color:#666; font-size:13px; }
+.template-tags { margin-top:8px; }
+.tag { background:#f0f0f0; padding:4px 8px; border-radius:6px; margin-right:6px; font-size:12px; }
+.template-actions { margin-top:10px; }

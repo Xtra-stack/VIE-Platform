@@ -1,18 +1,21 @@
 import { Review } from "../models/Review.js";
 import { CodeSubmission } from "../models/CodeSubmission.js";
 import { Project } from "../models/Project.js";
+import { Task } from "../models/Task.js";
 import { REVIEW_STATUS, SUBMISSION_STATUS } from "../constants/status.js";
-import { ROLES } from "../constants/roles.js";
+import { ROLES, hasRoleAtLeast } from "../constants/roles.js";
 
 export class ReviewService {
   async listReviews({ userId, userRole, companyId }) {
-    if (userRole === ROLES.MANAGER) {
+    if (hasRoleAtLeast(userRole, ROLES.MANAGER)) {
       if (!companyId) {
-        return Review.find({ reviewerRole: ROLES.MANAGER }).sort({ createdAt: -1 });
+        return Review.find({ reviewerRole: { $in: [ROLES.MANAGER, ROLES.ADMIN, ROLES.OWNER] } })
+          .sort({ createdAt: -1 });
       }
       const projects = await Project.find({ companyId }, { _id: 1 });
       const projectIds = projects.map((project) => project._id);
-      return Review.find({ reviewerRole: ROLES.MANAGER, projectId: { $in: projectIds } }).sort({ createdAt: -1 });
+      return Review.find({ reviewerRole: { $in: [ROLES.MANAGER, ROLES.ADMIN, ROLES.OWNER] }, projectId: { $in: projectIds } })
+        .sort({ createdAt: -1 });
     }
     if (userRole === ROLES.SENIOR) {
       return Review.find({ reviewerId: userId, reviewerRole: ROLES.SENIOR }).sort({ createdAt: -1 });
@@ -38,8 +41,10 @@ export class ReviewService {
       throw error;
     }
 
-    // For manager role, require comment
-    if (reviewerRole === ROLES.MANAGER && !managerComment) {
+    const isManagerOrHigher = hasRoleAtLeast(reviewerRole, ROLES.MANAGER);
+
+    // For manager role (or higher), require comment
+    if (isManagerOrHigher && !managerComment) {
       const error = new Error("Manager decision comment is required");
       error.status = 400;
       throw error;
@@ -59,7 +64,7 @@ export class ReviewService {
     };
 
     // Manager-specific fields
-    if (reviewerRole === ROLES.MANAGER) {
+    if (isManagerOrHigher) {
       updateData.managerComment = managerComment;
       updateData.riskAccepted = riskAccepted || false;
       updateData.overrideSeniorDecision = overrideSeniorDecision || false;
@@ -90,10 +95,17 @@ export class ReviewService {
       }
     }
 
-    if (reviewerRole === ROLES.MANAGER) {
+    if (isManagerOrHigher) {
       submission.status = SUBMISSION_STATUS.MANAGER_APPROVED;
       submission.resolvedAt = new Date();
       await submission.save();
+
+      const task = await Task.findOne({ submissionId: submission._id });
+      if (task) {
+        task.status = "APPROVED";
+        task.completedAt = new Date();
+        await task.save();
+      }
     }
 
     return review;
@@ -148,6 +160,12 @@ export class ReviewService {
       rejectedBy: reviewerId
     };
     await submission.save();
+
+    const task = await Task.findOne({ submissionId: submission._id });
+    if (task) {
+      task.status = "CHANGES_REQUESTED";
+      await task.save();
+    }
 
     return review;
   }

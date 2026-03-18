@@ -1,0 +1,100 @@
+/* Code Editor Styles */
+.code-editor-container {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #0d1117;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.code-editor-textarea {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  color: transparent;
+  background: transparent;
+  caret-color: white;
+  padding: 16px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-x: auto;
+  z-index: 2;
+}
+
+.code-editor-highlight {
+  grid-column: 1;
+  grid-row: 1;
+  color: #c9d1d9;
+  margin: 0;
+  padding: 16px;
+  pointer-events: none;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-x: auto;
+}
+
+.code-editor-highlight code {
+  color: #c9d1d9;
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Syntax highlighting for common patterns */
+.code-editor-textarea::placeholder {
+  color: #6e7681;
+}
+
+/* Terminal-style code highlighting */
+.code-editor-highlight {
+  background-color: #0d1117;
+}
+
+/* Scrollbar styling */
+.code-editor-textarea::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.code-editor-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code-editor-textarea::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 5px;
+}
+
+.code-editor-textarea::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* Focus state */
+.code-editor-container:has(.code-editor-textarea:focus) {
+  border-color: #1f6feb;
+  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .code-editor-container {
+    font-size: 12px;
+  }
+
+  .code-editor-textarea,
+  .code-editor-highlight {
+    padding: 12px;
+  }
+}

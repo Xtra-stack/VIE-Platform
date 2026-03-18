@@ -1,7 +1,7 @@
 import { SubmissionService } from "../services/submission.service.js";
 import { ActivityLogService } from "../services/activitylog.service.js";
 import { CodeSubmission } from "../models/CodeSubmission.js";
-import { ROLES } from "../constants/roles.js";
+import { ROLES, hasRoleAtLeast } from "../constants/roles.js";
 import { SUBMISSION_STATUS } from "../constants/status.js";
 
 const submissionService = new SubmissionService();
@@ -22,7 +22,7 @@ export const listSubmissions = async (req, res, next) => {
 
 export const createSubmission = async (req, res, next) => {
   try {
-    const { projectId, title, description, sourceBranch, targetBranch, codeSnippet, filesChanged } = req.body || {};
+    const { projectId, title, description, sourceBranch, targetBranch, codeSnippet, filesChanged, taskId } = req.body || {};
 
     if (!projectId || !title || !sourceBranch) {
       return res.status(400).json({
@@ -40,6 +40,7 @@ export const createSubmission = async (req, res, next) => {
       targetBranch,
       codeSnippet,
       filesChanged,
+      taskId,
     });
 
     return res.status(201).json({ success: true, data: submission });
@@ -108,7 +109,7 @@ export const deploySubmission = async (req, res, next) => {
     }
 
     // Only manager can deploy
-    if (req.user.role !== ROLES.MANAGER) {
+    if (!hasRoleAtLeast(req.user.role, ROLES.MANAGER)) {
       return res.status(403).json({ success: false, error: "Only managers can deploy" });
     }
 

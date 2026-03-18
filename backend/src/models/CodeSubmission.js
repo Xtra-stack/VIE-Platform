@@ -12,6 +12,9 @@ const codeSubmissionSchema = new mongoose.Schema(
 		title: { type: String, required: true, trim: true },
 		description: { type: String, trim: true },
 		
+		// Code snapshot reference (versioning & history)
+		codeSnapshotId: { type: mongoose.Schema.Types.ObjectId, ref: "CodeSnapshot" },
+		
 		// Line-aware code storage
 		codeLines: [
 			{
@@ -49,6 +52,10 @@ const codeSubmissionSchema = new mongoose.Schema(
 		submittedAt: { type: Date, default: Date.now },
 		resolvedAt: { type: Date },
 		
+		// Approval/Rejection tracking
+		approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+		rejectionReason: { type: String, trim: true },
+		
 		// Rejection feedback (learning-oriented)
 		rejectionFeedback: {
 			reason: String,
@@ -70,6 +77,19 @@ const codeSubmissionSchema = new mongoose.Schema(
 		// Deployment tracking
 		deployedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 		deployedAt: { type: Date },
+		
+		// Skill tracking
+		skillsAffected: [
+			{
+				skillName: {
+					type: String,
+					enum: ['Frontend', 'Backend', 'API Development', 'Testing', 'DevOps', 'Documentation', 'Communication']
+				},
+				xpAwarded: { type: Number, default: 0 },
+				levelBefore: { type: Number, default: 1 },
+				levelAfter: { type: Number, default: 1 }
+			}
+		],
 	},
 	{ timestamps: true }
 );

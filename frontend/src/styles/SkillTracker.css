@@ -1,0 +1,291 @@
+/* ═══════════════════════════════════════════════════════════════ */
+/* SKILL TRACKER STYLING */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.skill-card-compact {
+  padding: 16px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+  border: 1px solid #2f2f2f;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.skill-card-compact:hover {
+  border-color: #3a3a3a;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.08);
+  transform: translateY(-2px);
+}
+
+.skill-header-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.skill-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.skill-level {
+  font-size: 12px;
+  color: #9a9a9a;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.skill-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-bar-background {
+  flex: 1;
+  height: 6px;
+  background: #1f1f1f;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #2a2a2a;
+}
+
+.skill-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.skill-xp-text {
+  font-size: 11px;
+  color: #8a8a8a;
+  white-space: nowrap;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* EXPANDED SKILL CARD */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.skill-card-expanded {
+  padding: 24px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+  border: 1px solid #2f2f2f;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.skill-card-expanded:hover {
+  border-color: #3a3a3a;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.12);
+}
+
+.skill-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.skill-name-large {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.skill-level-large {
+  margin: 0;
+  font-size: 13px;
+  color: #9be9c0;
+  font-weight: 600;
+}
+
+.skill-level-badge {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #00ff88;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.badge-level {
+  font-size: 28px;
+  font-weight: 800;
+  color: #00ff88;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* PROGRESS SECTION */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.skill-progress-section {
+  margin-bottom: 20px;
+}
+
+.skill-bar-large {
+  height: 10px;
+  background: #1f1f1f;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #2a2a2a;
+  margin-bottom: 8px;
+}
+
+.skill-bar-fill-large {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 16px currentColor;
+}
+
+.skill-xp-detail {
+  font-size: 13px;
+  color: #c5c5c5;
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* STATS GRID */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.skill-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #9a9a9a;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* TIMESTAMPS */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.skill-last-updated {
+  margin: 0;
+  font-size: 12px;
+  color: #7a7a7a;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SKILL PROGRESS CONTAINER */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.skill-progress-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.skill-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* SKILL HEATMAP (ADMIN VIEW) */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.skill-heatmap {
+  margin: 20px 0;
+}
+
+.skill-heatmap-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.heatmap-cell {
+  padding: 20px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+  border-radius: 10px;
+  border: 1px solid #2f2f2f;
+  text-align: center;
+}
+
+.heatmap-skill-name {
+  font-size: 13px;
+  color: #9a9a9a;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 12px;
+}
+
+.heatmap-level {
+  font-size: 32px;
+  font-weight: 800;
+  color: #00ff88;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.heatmap-subtext {
+  font-size: 12px;
+  color: #7a7a7a;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* RESPONSIVE */
+/* ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .skill-progress-container {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-card-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .skill-level-badge {
+    align-self: flex-start;
+  }
+}

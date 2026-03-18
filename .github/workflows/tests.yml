@@ -1,0 +1,136 @@
+name: Tests & Linting
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:5.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: Install Backend Dependencies
+        run: npm ci
+        working-directory: backend
+
+      - name: Run Backend Linting
+        run: npm run lint --if-present
+        working-directory: backend
+        continue-on-error: true
+
+      - name: Run Backend Unit Tests
+        run: npm run test:unit --if-present
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          MONGODB_URI: mongodb://localhost:27017/vie-test
+        continue-on-error: true
+
+      - name: Run Backend Integration Tests
+        run: npm run test:integration --if-present
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          MONGODB_URI: mongodb://localhost:27017/vie-test
+        continue-on-error: true
+
+      - name: Upload Backend Coverage
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          files: ./backend/coverage/lcov.info
+          flags: backend
+          continue-on-error: true
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Run Frontend Linting
+        run: npm run lint --if-present
+        working-directory: frontend
+        continue-on-error: true
+
+      - name: Build Frontend
+        run: npm run build
+        working-directory: frontend
+        env:
+          VITE_API_BASE_URL: http://localhost:3000
+
+      - name: Run Frontend Tests
+        run: npm run test --if-present
+        working-directory: frontend
+        continue-on-error: true
+
+      - name: Upload Frontend Coverage
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          files: ./frontend/coverage/lcov.info
+          flags: frontend
+          continue-on-error: true
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: |
+          npm ci --prefix backend
+          npm ci --prefix frontend
+
+      - name: Check for Vulnerabilities
+        run: |
+          npm audit --prefix backend --audit-level=moderate || true
+          npm audit --prefix frontend --audit-level=moderate || true
+
+      - name: Check Code Formatting
+        run: |
+          npm run format:check --if-present --prefix backend || true
+          npm run format:check --if-present --prefix frontend || true
+        continue-on-error: true

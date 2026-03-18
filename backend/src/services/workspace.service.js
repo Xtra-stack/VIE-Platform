@@ -2,8 +2,11 @@ import { Company } from "../models/Company.js";
 import { Project } from "../models/Project.js";
 import { User } from "../models/User.js";
 import { InternalRepository } from "../models/InternalRepository.js";
+import { OrganizationInvite } from "../models/OrganizationInvite.js";
 import { ROLES } from "../constants/roles.js";
+import { canInviteRole } from "../constants/roles.js";
 import { signToken } from "../utils/jwt.js";
+import crypto from "crypto";
 
 const slugify = (value = "") =>
   value
@@ -14,6 +17,20 @@ const slugify = (value = "") =>
     .replace(/^-+|-+$/g, "");
 
 export class WorkspaceService {
+  async generateInviteCode() {
+    for (let index = 0; index < 5; index += 1) {
+      const candidate = crypto.randomBytes(4).toString("hex").toUpperCase();
+      const exists = await OrganizationInvite.findOne({ code: candidate });
+      if (!exists) {
+        return candidate;
+      }
+    }
+
+    const error = new Error("Could not generate invite code");
+    error.status = 500;
+    throw error;
+  }
+
   async createWorkspace({
     companyName,
     companySlug,
@@ -168,5 +185,121 @@ export class WorkspaceService {
     await project.save();
 
     return { user: newUser, project };
+  }
+
+  async createInviteCode({ companyId, inviterId, inviterRole, role, email = null, expiresInHours = 168 }) {
+    if (!companyId || !inviterId || !inviterRole || !role) {
+      const error = new Error("companyId, inviterId, inviterRole, and role are required");
+      error.status = 400;
+      throw error;
+    }
+
+    if (!canInviteRole(inviterRole, role)) {
+      const error = new Error("You cannot invite this role");
+      error.status = 403;
+      throw error;
+    }
+
+    const company = await Company.findById(companyId);
+    if (!company) {
+      const error = new Error("Company not found");
+      error.status = 404;
+      throw error;
+    }
+
+    const code = await this.generateInviteCode();
+    const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
+
+    const invite = await OrganizationInvite.create({
+      code,
+      companyId,
+      invitedBy: inviterId,
+      role,
+      email: email || undefined,
+      expiresAt,
+    });
+
+    return invite;
+  }
+
+  async joinWithInvite({ inviteCode, user }) {
+    const normalizedCode = (inviteCode || "").trim().toUpperCase();
+    if (!normalizedCode) {
+      const error = new Error("inviteCode is required");
+      error.status = 400;
+      throw error;
+    }
+
+    const invite = await OrganizationInvite.findOne({ code: normalizedCode });
+    if (!invite) {
+      const error = new Error("Invalid invite code");
+      error.status = 404;
+      throw error;
+    }
+
+    if (invite.status !== "PENDING") {
+      const error = new Error("Invite is no longer available");
+      error.status = 400;
+      throw error;
+    }
+
+    if (new Date() > invite.expiresAt) {
+      invite.status = "EXPIRED";
+      await invite.save();
+      const error = new Error("Invite code has expired");
+      error.status = 400;
+      throw error;
+    }
+
+    if (invite.email && invite.email.toLowerCase() !== user.email.toLowerCase()) {
+      const error = new Error("Invite code does not match this email");
+      error.status = 403;
+      throw error;
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ username: user.username }, { email: user.email }],
+    });
+    if (existingUser) {
+      const error = new Error("Username or email already exists");
+      error.status = 409;
+      throw error;
+    }
+
+    const newUser = await User.create({
+      username: user.username,
+      email: user.email,
+      password: user.password,
+      fullName: user.fullName,
+      role: invite.role,
+      companyId: invite.companyId,
+      canReview: invite.role === ROLES.SENIOR,
+      canDeploy: false,
+      canApproveDeployment: false,
+    });
+
+    const project = await Project.findOne({ companyId: invite.companyId }).sort({ createdAt: 1 });
+    if (project) {
+      project.members.push({ userId: newUser._id, role: invite.role });
+      await project.save();
+    }
+
+    invite.status = "ACCEPTED";
+    invite.acceptedBy = newUser._id;
+    invite.acceptedAt = new Date();
+    await invite.save();
+
+    const token = signToken({
+      id: newUser._id.toString(),
+      username: newUser.username,
+      role: newUser.role,
+      companyId: newUser.companyId ? newUser.companyId.toString() : null,
+    });
+
+    return {
+      invite,
+      user: newUser,
+      token,
+    };
   }
 }
