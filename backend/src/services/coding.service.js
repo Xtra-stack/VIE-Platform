@@ -88,7 +88,7 @@ found 0 vulnerabilities`,
 [nodemon] watching path(s): src/**
 [nodemon] watching extensions: js,json
 [nodemon] starting \`node src/server.js\`
-[VIE Server] 🚀 Server running on http://localhost:3000
+[VIE Server] 🚀 Server running on configured PORT
 [VIE Server] 📡 Database connected`,
         exitCode: 0,
         commandType: 'npm',

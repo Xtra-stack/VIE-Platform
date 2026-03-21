@@ -70,9 +70,9 @@ export default function SimulatedTerminal({
       'npm install': `> npm notice created a lockfile as package-lock.json
 > added 156 packages in 2.3s
 > up to date in 2.4s`,
-      'npm start': `> React App started on http://localhost:3000
+      'npm start': `> React App started on ${import.meta.env.VITE_API_URL || 'https://your-frontend-domain.vercel.app'}
 > Successfully compiled!
-> Great! Now open http://localhost:3000 to see your app.`,
+    > Great! Now open your deployed URL to see your app.`,
       'npm run build': `> react-scripts build
 > Creating an optimized production build...
 > Compiled successfully!

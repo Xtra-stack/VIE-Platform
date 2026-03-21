@@ -1,6 +1,6 @@
 import { getAuthMode, getCompanyId, getRefreshToken, getRole, getToken, removeToken, setToken } from '../utils/auth.js';
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 const getHeaders = () => {
   const token = getToken();
@@ -24,13 +24,13 @@ export const apiCall = async (method, endpoint, data = null) => {
     const response = await fetch(`${API_BASE}${endpoint}`, options);
 
     if (!response.ok) {
-      const isAuthEndpoint = endpoint.startsWith('/auth/login') || endpoint.startsWith('/auth/admin/login') || endpoint.startsWith('/auth/refresh');
+      const isAuthEndpoint = endpoint.startsWith('/api/auth/login') || endpoint.startsWith('/api/auth/admin/login') || endpoint.startsWith('/api/auth/refresh');
 
       if (response.status === 401 && !isAuthEndpoint) {
         const storedRefreshToken = getRefreshToken();
 
         if (storedRefreshToken) {
-          const refreshResponse = await fetch(`${API_BASE}/auth/refresh`, {
+          const refreshResponse = await fetch(`${API_BASE}/api/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken: storedRefreshToken }),
@@ -72,13 +72,16 @@ export const apiCall = async (method, endpoint, data = null) => {
 
     return await response.json();
   } catch (err) {
+    if (err instanceof TypeError) {
+      throw new Error('Network error: Unable to connect to API server. Please check your connection and deployment URL.');
+    }
     throw err;
   }
 };
 
 // Auth
 export const login = async (username, password) => {
-  const response = await apiCall('POST', '/auth/login', { username, password });
+  const response = await apiCall('POST', '/api/auth/login', { username, password });
   // Backend returns { success: true, data: { token, user } }
   if (response.data) {
     return {
@@ -93,17 +96,17 @@ export const login = async (username, password) => {
 };
 
 export const adminRegister = async (payload) => {
-  const response = await apiCall('POST', '/auth/admin/register', payload);
+  const response = await apiCall('POST', '/api/auth/admin/register', payload);
   return response.data;
 };
 
 export const register = async (payload) => {
-  const response = await apiCall('POST', '/auth/register', payload);
+  const response = await apiCall('POST', '/api/auth/register', payload);
   return response.data;
 };
 
 export const adminLogin = async (username, password) => {
-  const response = await apiCall('POST', '/auth/admin/login', { username, password });
+  const response = await apiCall('POST', '/api/auth/admin/login', { username, password });
   if (response.data) {
     return {
       token: response.data.token,
@@ -117,12 +120,12 @@ export const adminLogin = async (username, password) => {
 };
 
 export const refreshAuth = async (refreshToken) => {
-  const response = await apiCall('POST', '/auth/refresh', { refreshToken });
+  const response = await apiCall('POST', '/api/auth/refresh', { refreshToken });
   return response.data;
 };
 
 export const logout = async () => {
-  const response = await apiCall('POST', '/auth/logout', {});
+  const response = await apiCall('POST', '/api/auth/logout', {});
   return response;
 };
 
@@ -142,7 +145,7 @@ export const submitDemoTask = async (taskId) => {
 };
 
 export const getCurrentUser = async () => {
-  const response = await apiCall('GET', '/auth/me');
+  const response = await apiCall('GET', '/api/auth/me');
   return response.data?.user || null;
 };
 
