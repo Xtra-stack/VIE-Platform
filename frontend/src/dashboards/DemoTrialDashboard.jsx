@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { getDemoState, submitDemoTask } from '../services/api.js';
 import CodeEditor from '../components/CodeEditor.jsx';
@@ -10,6 +10,9 @@ export default function DemoTrialDashboard() {
   const [error, setError] = useState('');
   const [selectedTaskId, setSelectedTaskId] = useState('');
   const [workspaceByTask, setWorkspaceByTask] = useState({});
+  const workspaceSectionRef = useRef(null);
+
+  const getTaskId = (task) => task?.id || task?._id || '';
 
   const loadState = async () => {
     setLoading(true);
@@ -31,21 +34,24 @@ export default function DemoTrialDashboard() {
   useEffect(() => {
     const firstPending = (state?.tasks || []).find((task) => task.status !== 'APPROVED');
     if (firstPending && !selectedTaskId) {
-      setSelectedTaskId(firstPending.id);
+      setSelectedTaskId(getTaskId(firstPending));
     }
 
     if ((state?.tasks || []).length > 0) {
       setWorkspaceByTask((prev) => {
         const next = { ...prev };
         state.tasks.forEach((task) => {
-          if (!next[task.id]) {
-            next[task.id] = {
+          const taskId = getTaskId(task);
+          if (!taskId || next[taskId]) {
+            return;
+          }
+
+          next[taskId] = {
               activeFile: 'src/taskSolution.js',
               codeSnippet: `// ${task.title}\nexport function solveTask(input) {\n  // TODO: implement your logic for this problem statement\n  return input;\n}\n`,
               terminalCommand: 'npm test',
               terminalLogs: ['Demo terminal ready', `Problem loaded: ${task.title}`],
             };
-          }
         });
         return next;
       });
@@ -139,7 +145,8 @@ export default function DemoTrialDashboard() {
 
   const tasks = state?.tasks || [];
   const selectedTask = tasks.find((task) => task.id === selectedTaskId) || tasks[0] || null;
-  const currentWorkspace = selectedTask ? workspaceByTask[selectedTask.id] : null;
+  const selectedTaskKey = getTaskId(selectedTask);
+  const currentWorkspace = selectedTaskKey ? workspaceByTask[selectedTaskKey] : null;
   const events = state?.events || [];
   const approvedCount = tasks.filter((task) => task.status === 'APPROVED').length;
   const submittedCount = tasks.filter((task) => task.status === 'SUBMITTED' || task.status === 'CHANGES_REQUESTED').length;
@@ -173,7 +180,7 @@ export default function DemoTrialDashboard() {
       <div>
         {error && <div className="error">{error}</div>}
 
-        <div className="card">
+        <div ref={workspaceSectionRef} className="card">
           <h2>Demo Workspace Overview</h2>
           <p><strong>User:</strong> {state?.user?.fullName} ({state?.user?.role})</p>
           <p><strong>Workspace:</strong> {state?.workspace?.name}</p>
@@ -225,7 +232,7 @@ export default function DemoTrialDashboard() {
               onChange={(e) => setSelectedTaskId(e.target.value)}
             >
               {tasks.map((task) => (
-                <option key={task.id} value={task.id}>
+                <option key={getTaskId(task)} value={getTaskId(task)}>
                   {task.title}
                 </option>
               ))}
@@ -283,7 +290,7 @@ export default function DemoTrialDashboard() {
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button
                   type="button"
-                  onClick={() => selectedTask && handleSubmitTask(selectedTask.id)}
+                  onClick={() => selectedTaskKey && handleSubmitTask(selectedTaskKey)}
                   disabled={!selectedTask || selectedTask.status === 'APPROVED'}
                 >
                   {selectedTask?.status === 'CHANGES_REQUESTED' ? 'Submit Updated Code' : 'Submit Code For This Problem'}
@@ -298,7 +305,7 @@ export default function DemoTrialDashboard() {
         <div className="card">
           <h2>Assigned Tasks</h2>
           {tasks.map((task) => (
-            <div key={task.id} className="submission-item">
+            <div key={getTaskId(task)} className="submission-item">
               <div className="details">
                 <h3>{task.title}</h3>
                 <p>{task.description}</p>
@@ -312,12 +319,15 @@ export default function DemoTrialDashboard() {
               <div className="actions">
                 <button
                   type="button"
-                  onClick={() => setSelectedTaskId(task.id)}
+                  onClick={() => {
+                    setSelectedTaskId(getTaskId(task));
+                    workspaceSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
                 >
                   Open Workspace
                 </button>
                 {task.status !== 'APPROVED' && (
-                  <button onClick={() => handleSubmitTask(task.id)}>
+                  <button type="button" onClick={() => handleSubmitTask(getTaskId(task))}>
                     {getNextActionLabel(task)}
                   </button>
                 )}
@@ -327,7 +337,7 @@ export default function DemoTrialDashboard() {
           ))}
           {tasks.length > 0 && (
             <p style={{ marginTop: '10px', color: 'var(--text-grey)' }}>
-              Current selected task: <strong>{selectedTaskId || tasks[0].id}</strong>
+              Current selected task: <strong>{selectedTaskId || getTaskId(tasks[0])}</strong>
             </p>
           )}
         </div>
