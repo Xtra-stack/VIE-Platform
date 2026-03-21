@@ -52,7 +52,7 @@ jobs:
           outputs: type=docker,dest=/tmp/backend-image.tar
 
       - name: Upload Backend Image
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-image-${{ steps.extract_tag.outputs.tag }}
           path: /tmp/backend-image.tar
@@ -99,7 +99,7 @@ jobs:
           outputs: type=docker,dest=/tmp/frontend-image.tar
 
       - name: Upload Frontend Image
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-image-${{ steps.extract_tag.outputs.tag }}
           path: /tmp/frontend-image.tar
