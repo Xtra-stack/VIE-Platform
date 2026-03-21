@@ -34,6 +34,10 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get("/", (req, res) => {
+  res.status(200).send("Backend is running 🚀");
+});
+
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "ok",
