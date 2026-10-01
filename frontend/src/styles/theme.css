@@ -1,8 +1,7 @@
 /* VIE Platform Global Theme Variables */
 :root {
   /* Dark backgrounds */
-  --bg-dark: #0f0f0f;
-  --bg-dark-secondary: #1a1a1a;
+  --bg-dark: #0f0f0;
   --card-bg: #1a1a1a;
   --bg-card: var(--card-bg);
   --bg-card-hover: #242424;
@@ -81,10 +80,7 @@ button.danger {
 button.danger:hover {
   background: #dd3333;
 }
-
-/* Input styling */
-input, textarea, select {
-  background: var(--bg-dark-secondary);
+/* Input styling */  input, textarea, select {
   border: 1px solid var(--border-dark);
   color: var(--text-light);
 }

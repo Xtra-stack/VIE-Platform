@@ -7,13 +7,6 @@
   height: calc(100vh - 80px);
 }
 
-.dashboard-main {
-  flex: 1;
-  overflow-y: auto;
-  background: #fafafa;
-  padding: 24px;
-}
-
 .dashboard-section {
   background: white;
   border-radius: 8px;
@@ -433,10 +426,6 @@
     flex-direction: column;
   }
 
-  .dashboard-main {
-    padding: 16px;
-  }
-
   .dashboard-section {
     padding: 16px;
   }
@@ -506,17 +495,266 @@
 }
 
 /* Scrollbar Styling */
-.dashboard-main::-webkit-scrollbar {
-  width: 6px;
+/* Phase 3A Manager overview */
+.manager-dashboard {
+  --manager-blue: #4f7cff;
+  --manager-purple: #8068d9;
+  --manager-green: #27a977;
+  --manager-orange: #e99839;
 }
 
-.dashboard-main::-webkit-scrollbar-track {
-  background: transparent;
+.manager-period-filter {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--shell-muted);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.dashboard-main::-webkit-scrollbar-thumb {
-  background: #bdbdbd;
-  border-radius: 3px;
+.manager-period-filter select {
+  min-width: 130px;
+  padding: 9px 28px 9px 10px;
+  border: 1px solid var(--shell-border);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--shell-text);
+  font-size: 12px;
+}
+
+.manager-data-note {
+  margin: -12px 0 20px;
+  color: var(--shell-muted);
+  font-size: 11px;
+}
+
+.manager-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.manager-kpi-grid .stat-card {
+  display: grid;
+  min-height: 142px;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 20px;
+  border: 1px solid var(--shell-border);
+  border-radius: 9px;
+  background: var(--shell-card);
+  color: var(--shell-text);
+  text-align: left;
+  box-shadow: 0 3px 13px rgba(35, 60, 96, 0.045);
+}
+
+.manager-kpi-grid .stat-card:hover {
+  transform: none;
+  box-shadow: 0 7px 18px rgba(35, 60, 96, 0.09);
+}
+
+.manager-kpi-grid .stat-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  background: #eaf1ff;
+  color: var(--manager-blue);
+  font-size: 18px;
+}
+
+.manager-kpi-grid .stat-card:nth-child(2) .stat-icon { background: #edf8f3; color: var(--manager-green); }
+.manager-kpi-grid .stat-card:nth-child(3) .stat-icon { background: #f1edff; color: var(--manager-purple); }
+.manager-kpi-grid .stat-card:nth-child(4) .stat-icon { background: #fff3e2; color: var(--manager-orange); }
+
+.manager-kpi-grid .stat-title {
+  margin: 0 0 10px;
+  color: var(--shell-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.manager-kpi-grid .stat-value {
+  color: var(--shell-text);
+  font-size: 27px;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.manager-kpi-grid .stat-subtitle {
+  margin: 9px 0 0;
+  color: var(--shell-muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.manager-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.manager-dashboard-grid-secondary {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.manager-progress-list {
+  display: grid;
+  gap: 21px;
+  padding: 10px 0 5px;
+}
+
+.manager-team-list,
+.manager-activity-list {
+  display: grid;
+}
+
+.manager-team-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--shell-border);
+}
+
+.manager-team-row:last-child,
+.manager-activity-list .activity-item:last-child {
+  border-bottom: 0;
+}
+
+.manager-member-avatar {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: #edf1ff;
+  color: var(--manager-blue);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.manager-member-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.manager-member-copy strong,
+.manager-member-copy span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manager-member-copy strong { color: var(--shell-text); font-size: 12px; }
+.manager-member-copy span { margin-top: 4px; color: var(--shell-muted); font-size: 10px; }
+
+.manager-approval-summary {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid #f4dfbc;
+  border-radius: 7px;
+  background: #fff9ef;
+  color: #855c25;
+  font-size: 12px;
+}
+
+.manager-approval-summary span { color: #a6783f; font-size: 11px; }
+
+.manager-workspaces-card {
+  margin-bottom: 18px;
+}
+
+.manager-workspaces-card > .dashboard-widget-header button,
+.manager-workspaces-card button[type='submit'] {
+  padding: 9px 13px;
+  border: 1px solid var(--manager-blue);
+  border-radius: 6px;
+  background: var(--manager-blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.manager-workspace-empty {
+  border-top: 1px solid var(--shell-border);
+}
+
+.manager-legacy-workspace-form {
+  display: none;
+  margin: 18px 0 0;
+  padding: 20px;
+  border-style: solid;
+  box-shadow: none;
+}
+
+.manager-legacy-workspace-form.is-open { display: block; }
+
+.manager-legacy-workspace-form > h2,
+.manager-legacy-workspace-form > p,
+.manager-legacy-workspace-form > div:first-of-type { display: none; }
+
+.manager-legacy-controls {
+  display: grid;
+  gap: 18px;
+}
+
+.manager-legacy-controls > .card { margin-bottom: 0; }
+
+.manager-dashboard .card h2 {
+  color: var(--shell-text);
+  font-size: 15px;
+}
+
+.manager-dashboard .card {
+  border-color: var(--shell-border);
+  background: #fff;
+  box-shadow: 0 3px 13px rgba(35, 60, 96, 0.045);
+}
+
+/* Phase 4: harmonize legacy Manager controls with shared primitives. */
+.dashboard-layout:has(.manager-dashboard) .dashboard-main { background: var(--shell-workspace); }
+.manager-legacy-controls .card,
+.manager-legacy-workspace-form { border-radius: 10px; }
+.manager-legacy-controls .card h2,
+.manager-legacy-workspace-form h2 { color: var(--shell-text); }
+.manager-legacy-controls .form-group label,
+.manager-legacy-workspace-form .form-group label { color: var(--shell-text); font-size: 12px; font-weight: 700; }
+.manager-legacy-controls input,
+.manager-legacy-controls select,
+.manager-legacy-controls textarea,
+.manager-legacy-workspace-form input,
+.manager-legacy-workspace-form select,
+.manager-legacy-workspace-form textarea { border-color: var(--shell-border); border-radius: 7px; background: #fbfcfe; color: var(--shell-text); }
+.manager-legacy-controls input:focus,
+.manager-legacy-controls select:focus,
+.manager-legacy-controls textarea:focus,
+.manager-legacy-workspace-form input:focus,
+.manager-legacy-workspace-form select:focus,
+.manager-legacy-workspace-form textarea:focus { border-color: #9bb8ea; box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12); }
+
+@media (max-width: 1100px) {
+  .manager-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .manager-dashboard-grid,
+  .manager-dashboard-grid-secondary { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 520px) {
+  .manager-kpi-grid { grid-template-columns: 1fr; }
+  .manager-period-filter { width: 100%; justify-content: space-between; }
+  .manager-period-filter select { flex: 1; }
+  .manager-kpi-grid .stat-card { min-height: 116px; }
 }
 
 .dashboard-main::-webkit-scrollbar-thumb:hover {

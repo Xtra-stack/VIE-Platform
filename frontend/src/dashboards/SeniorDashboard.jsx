@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { getReviews, approveReview, rejectReview, getSubmission, getWorkspaceActivityLogs } from '../services/api.js';
+import { getReviews, approveReview, rejectReview, getSubmission, getWorkspaceActivityLogs, getProjects } from '../services/api.js';
 import ReviewModal from '../components/ReviewModal.jsx';
 import ActivityMonitor from '../components/ActivityMonitor.jsx';
 import DashboardLayout from '../components/DashboardLayout.jsx';
-import RoleStats from '../components/RoleStats.jsx';
+import { ActivityItem, ChartCard, DataTable, EmptyState, LoadingState, PageHeader, ProgressBar, StatCard, StatusBadge } from '../components/DashboardPrimitives.jsx';
+import { getUser } from '../utils/auth.js';
+import '../styles/SeniorDashboard.css';
 
 export default function SeniorDashboard() {
   const [reviews, setReviews] = useState([]);
   const [submissions, setSubmissions] = useState({});
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -69,8 +72,9 @@ export default function SeniorDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const reviewsData = await getReviews();
+      const [reviewsData, projectsData] = await Promise.all([getReviews(), getProjects()]);
       setReviews(reviewsData || []);
+      setProjects(projectsData || []);
 
       // Load submission details for each review
       const submissionsMap = {};
@@ -89,6 +93,7 @@ export default function SeniorDashboard() {
       console.error('Error loading reviews:', err);
       setError(err.message || 'Failed to load reviews');
       setSubmissions({});
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -133,22 +138,127 @@ export default function SeniorDashboard() {
     }
   };
 
-  if (loading) return <div className="loading">Loading reviews...</div>;
+  if (loading) {
+    return (
+      <DashboardLayout title="Senior Developer Dashboard" subtitle="Review code and monitor team activity">
+        <LoadingState message="Loading engineering workspace..." />
+      </DashboardLayout>
+    );
+  }
 
   const pendingReviews = reviews.filter((r) => r.status === 'PENDING');
+  const user = getUser();
+  const displayName = user?.fullName || user?.name || user?.username || 'Senior Developer';
+  const reviewRows = reviews.map((review) => {
+    const submission = submissions[review.submissionId];
+    return {
+      id: review._id || review.submissionId,
+      title: submission?.title || 'Submission',
+      author: submission?.submittedBy || 'Author unavailable',
+      status: review.status || 'UNKNOWN',
+      branch: submission?.sourceBranch ? `${submission.sourceBranch} → ${submission.targetBranch || 'main'}` : 'Branch unavailable',
+      updatedAt: review.updatedAt || review.reviewedAt || review.createdAt,
+    };
+  });
+  const activities = [
+    ...reviews.map((review) => ({
+      id: `review-${review._id || review.submissionId}`,
+      title: review.status === 'PENDING' ? 'Review awaiting action' : 'Review updated',
+      description: submissions[review.submissionId]?.title || 'Submission title unavailable',
+      timestamp: review.updatedAt || review.reviewedAt || review.createdAt,
+      tone: review.status === 'PENDING' ? 'orange' : 'green',
+    })),
+    ...Object.values(submissions).map((submission) => ({
+      id: `submission-${submission._id}`,
+      title: 'Code submission received',
+      description: submission.title || 'Submission title unavailable',
+      timestamp: submission.submittedAt || submission.createdAt,
+      tone: 'blue',
+    })),
+  ]
+    .sort((first, second) => new Date(second.timestamp || 0) - new Date(first.timestamp || 0))
+    .slice(0, 5);
+  const formatDate = (timestamp) => timestamp
+    ? new Date(timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+    : 'Time unavailable';
+  const reviewStatusTone = (status) => {
+    if (status === 'APPROVED') return 'success';
+    if (status === 'REJECTED' || status === 'CHANGES_REQUESTED') return 'danger';
+    if (status === 'PENDING') return 'warning';
+    return 'neutral';
+  };
 
   return (
-    <DashboardLayout 
-      title="Senior Developer Dashboard" 
-      subtitle="Review code and monitor team activity"
-    >
-      <div>
-        <RoleStats role="SENIOR" />
+    <DashboardLayout title="Senior Developer Dashboard" subtitle="Review code and monitor team activity">
+      <div className="senior-dashboard">
         {error && <div className="dashboard-error">{error}</div>}
         {success && <div className="dashboard-success">{success}</div>}
         {activityError && <div className="dashboard-error">{activityError}</div>}
 
-        {/* Tabs */}
+        <PageHeader
+          title={`Good morning, ${displayName} 👋`}
+          subtitle="Here are your tasks, reviews and recent engineering activity."
+        />
+
+        <div className="senior-data-note">Review and submission totals are live. Task and deployment summaries are not exposed for Senior Developers.</div>
+
+        <section className="senior-kpi-grid" aria-label="Senior Developer KPIs">
+          <StatCard title="My Tasks" value="N/A" subtitle="Senior task endpoint unavailable" icon="✓" />
+          <StatCard title="Pull Requests" value="N/A" subtitle="Repository PR data unavailable" icon="⑂" />
+          <StatCard title="Code Reviews" value={pendingReviews.length} subtitle={pendingReviews.length ? 'Awaiting your review' : 'No pending reviews'} icon="◈" />
+          <StatCard title="Deployments" value="N/A" subtitle="Deployment list is not available" icon="⇧" />
+        </section>
+
+        <div className="senior-dashboard-grid">
+          <ChartCard title="Task Progress" subtitle="Supported task summary is not available for this role">
+            <div className="senior-unavailable-summary">
+              <ProgressBar label="Task data unavailable" value={0} />
+              <p>Task records are currently exposed through the junior-only task endpoint.</p>
+            </div>
+          </ChartCard>
+
+          <ChartCard title="Developer Workspace" subtitle="Quick access to existing engineering workflows">
+            <div className="senior-workspace-actions">
+              <button type="button" onClick={() => setActiveTab('team-activity')}>My Tasks <span>→</span></button>
+              <button type="button" onClick={() => setActiveTab('reviews')}>Code Review <span>→</span></button>
+              <button type="button" onClick={() => window.location.assign('/code-editor')}>Code / Repository <span>→</span></button>
+              <button type="button" onClick={() => setActiveTab('team-activity')}>Team Activity <span>→</span></button>
+            </div>
+          </ChartCard>
+        </div>
+
+        <div className="senior-dashboard-grid senior-dashboard-grid-secondary">
+          <ChartCard title="My Projects" subtitle="Projects returned by the existing project API">
+            {projects.length === 0 ? (
+              <EmptyState icon="▦" title="No projects assigned" message="Projects will appear here when they are available to your account." />
+            ) : (
+              <div className="senior-project-list">
+                {projects.map((project) => (
+                  <div className="senior-project-row" key={project._id || project.id || project.slug || project.name}>
+                    <div>
+                      <strong>{project.name || 'Unnamed project'}</strong>
+                      <span>{project.description || project.techArea || 'Technology details unavailable'}</span>
+                    </div>
+                    <button type="button" disabled title="Project detail route is not available">Details unavailable</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ChartCard>
+
+          <ChartCard title="Recent Activity" subtitle="Review and submission events available to your account">
+            {activities.length === 0 ? (
+              <EmptyState icon="◷" title="No recent activity" message="Review and submission activity will appear here." />
+            ) : (
+              <div className="senior-activity-list">
+                {activities.map((activity) => (
+                  <ActivityItem key={activity.id} title={activity.title} description={activity.description} timestamp={formatDate(activity.timestamp)} tone={activity.tone} />
+                ))}
+              </div>
+            )}
+          </ChartCard>
+        </div>
+
         <div className="dashboard-tabs">
           <button 
             onClick={() => setActiveTab('reviews')}
@@ -164,39 +274,27 @@ export default function SeniorDashboard() {
           </button>
         </div>
 
-      {/* Reviews Tab */}
       {activeTab === 'reviews' && (
-        <div>
-
-      <div className="card">
-        <h2>👁️ Code Reviews ({pendingReviews.length})</h2>
-        <p style={{ color: 'var(--text-grey)', marginBottom: '15px' }}>
-          ⚠️ <strong>Review Role:</strong> You can approve or request changes, but CANNOT merge code. 
-          Only Managers have merge authority.
-        </p>
+        <div className="senior-review-section">
+      <ChartCard title={`Code Reviews (${pendingReviews.length})`} subtitle="Approve or request changes. Managers retain merge authority.">
         {pendingReviews.length === 0 ? (
-          <p>No pending reviews.</p>
+          <EmptyState icon="◈" title="No pending reviews" message="New review requests will appear here." />
         ) : (
           pendingReviews.map((review) => {
             const sub = submissions[review.submissionId];
             return (
-              <div key={review._id} className="submission-item">
-                <div className="details" style={{ flex: 1 }}>
+              <div key={review._id || review.submissionId} className="senior-review-row">
+                <div>
                   <h3>{sub?.title || 'Submission'}</h3>
-                  <p>Developer: {sub?.submittedBy}</p>
-                  <p>Branch: {sub?.sourceBranch} → {sub?.targetBranch}</p>
-                  <p>{sub?.description}</p>
+                  <p>{sub?.submittedBy || 'Developer unavailable'} · {sub?.sourceBranch || 'Branch unavailable'}</p>
                 </div>
-                <div className="actions">
-                  <button onClick={() => openReviewModal(review)} className="primary">
-                    📋 Review Code
-                  </button>
-                </div>
+                <StatusBadge status="PENDING" tone="warning" />
+                <button onClick={() => openReviewModal(review)}>Review Code</button>
               </div>
             );
           })
         )}
-      </div>
+      </ChartCard>
 
       {reviewModalOpen && selectedSubmission && (
         <ReviewModal
@@ -215,14 +313,9 @@ export default function SeniorDashboard() {
       </div>
       )}
 
-      {/* Team Activity Tab */}
       {activeTab === 'team-activity' && (
-        <div>
-          <div className="card">
-            <h2>📊 Team Activity</h2>
-            <p style={{ color: 'var(--text-grey)', marginBottom: '15px' }}>
-              Monitor the activity of your junior developers.
-            </p>
+        <div className="senior-team-section">
+          <ChartCard title="Team Activity" subtitle="Monitor activity from your selected workspace.">
 
             <div className="form-group">
               <label>Select Workspace*</label>
@@ -238,7 +331,7 @@ export default function SeniorDashboard() {
                 ))}
               </select>
             </div>
-          </div>
+          </ChartCard>
 
           {selectedWorkspace && (
             <ActivityMonitor 
@@ -249,6 +342,23 @@ export default function SeniorDashboard() {
           )}
         </div>
       )}
+
+      <ChartCard title="Review History" subtitle="All review records returned for your account.">
+        {reviewRows.length === 0 ? (
+          <EmptyState icon="◈" title="No review history" message="Review records will appear when submissions are assigned." />
+        ) : (
+          <DataTable
+            columns={[
+              { key: 'title', label: 'Submission' },
+              { key: 'author', label: 'Author' },
+              { key: 'branch', label: 'Branch' },
+              { key: 'status', label: 'Status', render: (row) => <StatusBadge status={row.status} tone={reviewStatusTone(row.status)} /> },
+              { key: 'updatedAt', label: 'Updated', render: (row) => formatDate(row.updatedAt) },
+            ]}
+            rows={reviewRows}
+          />
+        )}
+      </ChartCard>
       </div>
     </DashboardLayout>
   );

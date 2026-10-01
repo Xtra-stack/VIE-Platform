@@ -7,13 +7,6 @@
   height: calc(100vh - 80px);
 }
 
-.dashboard-main {
-  flex: 1;
-  overflow-y: auto;
-  background: #fafafa;
-  padding: 24px;
-}
-
 .dashboard-section {
   background: white;
   border-radius: 8px;
@@ -446,10 +439,6 @@
     flex-direction: column;
   }
 
-  .dashboard-main {
-    padding: 16px;
-  }
-
   .dashboard-section {
     padding: 16px;
   }
@@ -514,17 +503,144 @@
 }
 
 /* Scrollbar Styling */
-.dashboard-main::-webkit-scrollbar {
-  width: 6px;
+/* Phase 3B Senior Developer dashboard */
+.senior-dashboard {
+  --senior-blue: #4f7cff;
+  --senior-purple: #8068d9;
+  --senior-green: #27a977;
+  --senior-orange: #e99839;
 }
 
-.dashboard-main::-webkit-scrollbar-track {
-  background: transparent;
+.senior-data-note {
+  margin: -12px 0 20px;
+  color: var(--shell-muted);
+  font-size: 11px;
 }
 
-.dashboard-main::-webkit-scrollbar-thumb {
-  background: #bdbdbd;
-  border-radius: 3px;
+.senior-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.senior-kpi-grid .stat-card {
+  display: grid;
+  min-height: 142px;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 20px;
+  border: 1px solid var(--shell-border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--shell-text);
+  text-align: left;
+  box-shadow: 0 3px 13px rgba(35, 60, 96, 0.045);
+}
+
+.senior-kpi-grid .stat-card:hover { transform: none; box-shadow: 0 7px 18px rgba(35, 60, 96, 0.09); }
+
+.senior-kpi-grid .stat-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  background: #eaf1ff;
+  color: var(--senior-blue);
+  font-size: 18px;
+}
+
+.senior-kpi-grid .stat-card:nth-child(2) .stat-icon { background: #f1edff; color: var(--senior-purple); }
+.senior-kpi-grid .stat-card:nth-child(3) .stat-icon { background: #fff3e2; color: var(--senior-orange); }
+.senior-kpi-grid .stat-card:nth-child(4) .stat-icon { background: #edf8f3; color: var(--senior-green); }
+.senior-kpi-grid .stat-title { margin: 0 0 10px; color: var(--shell-muted); font-size: 11px; font-weight: 700; }
+.senior-kpi-grid .stat-value { color: var(--shell-text); font-size: 27px; font-weight: 750; line-height: 1; }
+.senior-kpi-grid .stat-subtitle { margin: 9px 0 0; color: var(--shell-muted); font-size: 10px; line-height: 1.35; }
+
+.senior-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.senior-dashboard-grid-secondary { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+
+.senior-unavailable-summary { display: grid; gap: 15px; padding-top: 10px; }
+.senior-unavailable-summary p { margin: 0; color: var(--shell-muted); font-size: 11px; line-height: 1.5; }
+
+.senior-workspace-actions { display: grid; gap: 7px; }
+.senior-workspace-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 12px;
+  border: 1px solid var(--shell-border);
+  border-radius: 6px;
+  background: #f8fafd;
+  color: var(--shell-text);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: left;
+}
+.senior-workspace-actions button:hover { border-color: #b9caf0; background: #eef4ff; color: #315db3; }
+.senior-workspace-actions span { color: var(--senior-blue); font-size: 16px; }
+
+.senior-project-list,
+.senior-activity-list { display: grid; }
+.senior-project-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--shell-border); }
+.senior-project-row:last-child { border-bottom: 0; }
+.senior-project-row > div { min-width: 0; flex: 1; }
+.senior-project-row strong,
+.senior-project-row span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.senior-project-row strong { color: var(--shell-text); font-size: 12px; }
+.senior-project-row span { margin-top: 4px; color: var(--shell-muted); font-size: 10px; }
+.senior-project-row button { padding: 7px 9px; border: 1px solid #b9caf0; border-radius: 5px; background: #fff; color: #315db3; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.senior-project-row button:disabled { border-color: var(--shell-border); background: #f5f7fb; color: var(--shell-muted); cursor: not-allowed; }
+
+.senior-review-section,
+.senior-team-section { margin-bottom: 18px; }
+.senior-review-row { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--shell-border); }
+.senior-review-row:last-child { border-bottom: 0; }
+.senior-review-row > div { min-width: 0; flex: 1; }
+.senior-review-row h3 { margin: 0; overflow: hidden; color: var(--shell-text); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.senior-review-row p { margin: 5px 0 0; overflow: hidden; color: var(--shell-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.senior-review-row > button { padding: 8px 10px; border: 1px solid var(--senior-blue); border-radius: 5px; background: var(--senior-blue); color: #fff; font-size: 10px; font-weight: 700; white-space: nowrap; }
+
+.senior-dashboard .dashboard-tabs { margin-top: 6px; }
+.senior-dashboard .form-group label { color: var(--shell-text); }
+.senior-dashboard .form-group select { border-color: var(--shell-border); color: var(--shell-text); }
+.senior-dashboard .card { border-color: var(--shell-border); background: #fff; box-shadow: 0 3px 13px rgba(35, 60, 96, 0.045); }
+
+/* Phase 4: harmonize legacy Senior review controls with shared primitives. */
+.dashboard-layout:has(.senior-dashboard) .dashboard-main { background: var(--shell-workspace); }
+.senior-dashboard .card { border-radius: 10px; }
+.senior-dashboard .form-group label { color: var(--shell-text); font-size: 12px; font-weight: 700; }
+.senior-dashboard .form-group select,
+.senior-dashboard .form-group input,
+.senior-dashboard .form-group textarea { border-color: var(--shell-border); border-radius: 7px; background: #fbfcfe; color: var(--shell-text); }
+.senior-dashboard .form-group select:focus,
+.senior-dashboard .form-group input:focus,
+.senior-dashboard .form-group textarea:focus { border-color: #9bb8ea; box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12); }
+
+@media (max-width: 1100px) {
+  .senior-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .senior-dashboard-grid,
+  .senior-dashboard-grid-secondary { grid-template-columns: 1fr; }
+  .senior-review-row { align-items: flex-start; flex-wrap: wrap; }
+  .senior-review-row > button { margin-left: auto; }
+}
+
+@media (max-width: 520px) {
+  .senior-kpi-grid { grid-template-columns: 1fr; }
+  .senior-kpi-grid .stat-card { min-height: 116px; }
+  .senior-project-row { align-items: flex-start; flex-direction: column; }
+  .senior-project-row button { align-self: flex-end; }
 }
 
 .dashboard-main::-webkit-scrollbar-thumb:hover {

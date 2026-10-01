@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getReviews, approveManagerReview, rejectManagerReview, getSubmission, inviteWorkspaceUser, createProjectWorkspace, getProjects, getProjectWorkspaces, createInviteCode } from '../services/api.js';
 import CodeViewer from '../components/CodeViewer.jsx';
-import { getCompanyId } from '../utils/auth.js';
+import { getCompanyId, getUser } from '../utils/auth.js';
 import DashboardLayout from '../components/DashboardLayout.jsx';
-import RoleStats from '../components/RoleStats.jsx';
+import { ActivityItem, ChartCard, DataTable, EmptyState, ErrorState, LoadingState, PageHeader, ProgressBar, StatCard, StatusBadge } from '../components/DashboardPrimitives.jsx';
+import '../styles/ManagerDashboard.css';
 
 export default function ManagerDashboard() {
   const [reviews, setReviews] = useState([]);
@@ -111,7 +112,6 @@ export default function ManagerDashboard() {
     return [
       { value: 'SENIOR', label: 'Senior' },
       { value: 'JUNIOR', label: 'Junior' },
-          <RoleStats role="MANAGER" />
     ];
   };
 
@@ -240,27 +240,202 @@ export default function ManagerDashboard() {
     }
   };
 
-  if (loading) return <div className="loading">Loading approvals...</div>;
+  if (loading) {
+    return (
+      <DashboardLayout title="Manager Dashboard" subtitle="Approve releases and manage learning workspaces">
+        <LoadingState message="Loading manager workspace..." />
+      </DashboardLayout>
+    );
+  }
 
   // Filter reviews that are pending manager approval
   const managerReviews = reviews.filter(
     (r) => r.reviewerRole === 'MANAGER' && r.status === 'PENDING'
   );
 
+  const user = getUser();
+  const displayName = user?.fullName || user?.name || user?.username || 'Manager';
+  const activeWorkspaces = workspaces.filter((workspace) => workspace.status === 'ACTIVE');
+  const activeMembers = new Map();
+  workspaces.forEach((workspace) => {
+    [...(workspace.assignedJuniors || []), ...(workspace.assignedSeniors || [])].forEach((member) => {
+      const memberId = member?._id || member?.id || member?.username || member;
+      const memberName = member?.fullName || member?.name || member?.username || 'Assigned member';
+      if (memberId && !activeMembers.has(String(memberId))) {
+        activeMembers.set(String(memberId), { member, memberName, workspaceCount: 0, activeCount: 0 });
+      }
+      const record = activeMembers.get(String(memberId));
+      if (record) {
+        record.workspaceCount += 1;
+        if (workspace.status === 'ACTIVE') record.activeCount += 1;
+      }
+    });
+  });
+
+  const progressByArea = ['FRONTEND', 'BACKEND', 'FULLSTACK']
+    .map((techArea) => {
+      const areaWorkspaces = workspaces.filter((workspace) => workspace.techArea === techArea);
+      const completed = areaWorkspaces.filter((workspace) => workspace.status === 'COMPLETED').length;
+      return {
+        label: techArea === 'FULLSTACK' ? 'Full stack' : `${techArea.charAt(0)}${techArea.slice(1).toLowerCase()}`,
+        total: areaWorkspaces.length,
+        progress: areaWorkspaces.length ? Math.round((completed / areaWorkspaces.length) * 100) : 0,
+      };
+    })
+    .filter((area) => area.total > 0);
+
+  const activities = [
+    ...workspaces.map((workspace) => ({
+      id: `workspace-${workspace._id || workspace.id || workspace.name}`,
+      title: 'Workspace available',
+      description: `${workspace.name || 'Unnamed workspace'} · ${workspace.status || 'Status unavailable'}`,
+      timestamp: workspace.createdAt,
+      tone: workspace.status === 'COMPLETED' ? 'green' : 'blue',
+    })),
+    ...projects.map((project) => ({
+      id: `project-${project._id || project.id || project.name}`,
+      title: 'Project available',
+      description: project.name || 'Unnamed project',
+      timestamp: project.createdAt,
+      tone: 'purple',
+    })),
+    ...reviews.map((review) => ({
+      id: `review-${review._id || review.id || review.submissionId}`,
+      title: review.status === 'PENDING' ? 'Approval requires attention' : 'Review updated',
+      description: review.status || 'Review status unavailable',
+      timestamp: review.updatedAt || review.createdAt,
+      tone: review.status === 'PENDING' ? 'orange' : 'green',
+    })),
+  ]
+    .sort((first, second) => new Date(second.timestamp || 0) - new Date(first.timestamp || 0))
+    .slice(0, 5);
+
+  const formatActivityTime = (timestamp) => {
+    if (!timestamp) return 'Time unavailable';
+    return new Date(timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  };
+
+  const workspaceRows = workspaces.map((workspace) => ({
+    ...workspace,
+    memberCount: (workspace.assignedJuniors?.length || 0) + (workspace.assignedSeniors?.length || 0),
+  }));
+
   return (
-    <DashboardLayout
-      title="Manager Dashboard"
-      subtitle="Approve releases and manage learning workspaces"
-    >
-    <div>
+    <DashboardLayout title="Manager Dashboard" subtitle="Approve releases and manage learning workspaces">
+    <div className="manager-dashboard">
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
       {inviteSuccess && <div className="success">{inviteSuccess}</div>}
       {workspaceSuccess && <div className="success">{workspaceSuccess}</div>}
       {workspaceError && <div className="error">{workspaceError}</div>}
 
+      <PageHeader
+        title={`Good morning, ${displayName} 👋`}
+        subtitle="Here's an overview of your teams and projects."
+        actions={(
+          <label className="manager-period-filter">
+            <span>View</span>
+            <select aria-label="Dashboard date range" defaultValue="7">
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="month">This month</option>
+            </select>
+          </label>
+        )}
+      />
+
+      <div className="manager-data-note">Current workspace APIs provide live totals. Date range is available for future historical reporting.</div>
+
+      <section className="manager-kpi-grid" aria-label="Manager KPIs">
+        <StatCard title="Total Projects" value={projects.length} subtitle="Projects visible to you" icon="▦" />
+        <StatCard title="Active Team Members" value={activeMembers.size || 'N/A'} subtitle={activeMembers.size ? 'Members assigned to workspaces' : 'No workspace assignments'} icon="♧" />
+        <StatCard title="Tasks Completed" value="N/A" subtitle="No manager task summary available" icon="✓" />
+        <StatCard title="Deployments" value="N/A" subtitle="Deployment list is not available" icon="⇧" />
+      </section>
+
+      <div className="manager-dashboard-grid manager-dashboard-grid-main">
+        <ChartCard title="Project Progress" subtitle="Completion by available workspace tech area">
+          {progressByArea.length === 0 ? (
+            <EmptyState icon="▦" title="No project progress yet" message="Create a project workspace to see progress here." />
+          ) : (
+            <div className="manager-progress-list">
+              {progressByArea.map((area) => (
+                <ProgressBar key={area.label} label={`${area.label} · ${area.total} workspace${area.total === 1 ? '' : 's'}`} value={area.progress} tone={area.label === 'Backend' ? 'purple' : area.label === 'Full stack' ? 'green' : 'blue'} />
+              ))}
+            </div>
+          )}
+        </ChartCard>
+
+        <ChartCard title="Team Performance" subtitle="Assignment coverage from current workspaces">
+          {activeMembers.size === 0 ? (
+            <EmptyState icon="♧" title="No team assignments yet" message="Assigned members will appear when a workspace has a team." />
+          ) : (
+            <div className="manager-team-list">
+              {[...activeMembers.values()].map(({ member, memberName, workspaceCount, activeCount }) => (
+                <div className="manager-team-row" key={member?._id || member?.id || memberName}>
+                  <span className="manager-member-avatar">{memberName.slice(0, 2).toUpperCase()}</span>
+                  <div className="manager-member-copy">
+                    <strong>{memberName}</strong>
+                    <span>{member?.role || 'Developer'} · {workspaceCount} assigned workspace{workspaceCount === 1 ? '' : 's'}</span>
+                  </div>
+                  <StatusBadge status={activeCount ? 'Active' : 'Assigned'} tone={activeCount ? 'success' : 'neutral'} />
+                </div>
+              ))}
+            </div>
+          )}
+        </ChartCard>
+      </div>
+
+      <div className="manager-dashboard-grid manager-dashboard-grid-secondary">
+        <ChartCard title="Recent Activities" subtitle="Recent records available from workspace, project, and review APIs">
+          {activities.length === 0 ? (
+            <EmptyState icon="◷" title="No recent activities" message="Workspace and review activity will appear here." />
+          ) : (
+            <div className="manager-activity-list">
+              {activities.map((activity) => (
+                <ActivityItem key={activity.id} title={activity.title} description={activity.description} timestamp={formatActivityTime(activity.timestamp)} tone={activity.tone} />
+              ))}
+            </div>
+          )}
+        </ChartCard>
+
+        <ChartCard title="Pending Approvals" subtitle="Manager actions that require attention">
+          {managerReviews.length === 0 ? (
+            <EmptyState icon="✓" title="No pending approvals" message="There are no submissions awaiting manager approval." />
+          ) : (
+            <div className="manager-approval-summary">
+              <strong>{managerReviews.length} submission{managerReviews.length === 1 ? '' : 's'} awaiting review</strong>
+              <span>Use the Final Approval section below to inspect and decide.</span>
+            </div>
+          )}
+        </ChartCard>
+      </div>
+
+      <section className="dashboard-widget manager-workspaces-card">
+        <div className="dashboard-widget-header">
+          <div>
+            <h2>Project Workspaces</h2>
+            <p>Manage active delivery workspaces and keep team setup close at hand.</p>
+          </div>
+          <button type="button" onClick={() => setShowWorkspaceForm((value) => !value)}>{showWorkspaceForm ? 'Close form' : '+ Create Workspace'}</button>
+        </div>
+        {workspaces.length === 0 ? (
+          <div className="manager-workspace-empty"><EmptyState icon="▦" title="No project workspaces" message="Create a workspace to begin assigning delivery work." /></div>
+        ) : (
+          <DataTable
+            columns={[
+              { key: 'name', label: 'Workspace' },
+              { key: 'projectType', label: 'Type' },
+              { key: 'techArea', label: 'Area' },
+              { key: 'status', label: 'Status', render: (row) => <StatusBadge status={row.status || 'Unknown'} tone={row.status === 'ACTIVE' ? 'success' : 'neutral'} /> },
+              { key: 'memberCount', label: 'Members' },
+            ]}
+            rows={workspaceRows}
+          />
+        )}
+
       {/* Workspace Creation Section */}
-      <div className="card">
+      <div className={`card manager-legacy-workspace-form ${showWorkspaceForm ? 'is-open' : ''}`}>
         <h2>🚀 Project Workspaces</h2>
         <p style={{ color: 'var(--text-grey)', marginBottom: '15px' }}>
           Create workspaces for new features, bug fixes, or updates with assigned teams.
@@ -288,9 +463,7 @@ export default function ManagerDashboard() {
           </div>
         )}
 
-        {!showWorkspaceForm ? (
-          <button onClick={() => setShowWorkspaceForm(true)}>+ Create Workspace</button>
-        ) : (
+        {showWorkspaceForm && (
           <form onSubmit={handleCreateWorkspace}>
             <div className="form-group">
               <label>Workspace Name*</label>
@@ -308,7 +481,7 @@ export default function ManagerDashboard() {
               <select name="projectId" value={workspaceForm.projectId} onChange={handleWorkspaceChange} required>
                 <option value="">Select Project</option>
                 {projects.map((proj) => (
-                  <option key={proj._id} value={proj._id}>
+                  <option key={proj._id || proj.id || proj.slug || proj.name} value={proj._id || proj.id}>
                     {proj.name}
                   </option>
                 ))}
@@ -350,7 +523,9 @@ export default function ManagerDashboard() {
           </form>
         )}
       </div>
+      </section>
 
+      <div className="manager-legacy-controls">
       <div className="card">
         <h2>👥 Invite Team Members</h2>
         <p style={{ color: 'var(--text-grey)', marginBottom: '15px' }}>
@@ -550,6 +725,7 @@ export default function ManagerDashboard() {
           onClose={() => setSelectedSubmission(null)}
         />
       )}
+      </div>
     </div>
     </DashboardLayout>
   );

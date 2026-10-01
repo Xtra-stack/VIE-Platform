@@ -10,6 +10,8 @@ import {
   updateTaskStatus,
   executeTerminalCommand,
   getTerminalHistory,
+  getCareerProfile,
+  getUnlockables,
 } from '../services/api.js';
 import CodeViewer from '../components/CodeViewer.jsx';
 import CodeDiff from '../components/CodeDiff.jsx';
@@ -19,9 +21,11 @@ import ErrorBoundary from '../components/ErrorBoundary.jsx';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import CodeEditorPanel from '../components/CodeEditor/CodeEditorPanel.jsx';
 import SimulatedTerminal from '../components/CodeEditor/SimulatedTerminal.jsx';
-import RoleStats from '../components/RoleStats.jsx';
+import { ActivityItem, ChartCard, EmptyState, LoadingState, PageHeader, StatCard, StatusBadge } from '../components/DashboardPrimitives.jsx';
+import { getUser } from '../utils/auth.js';
 import '../styles/BuildStatus.css';
 import '../styles/TerminalOutput.css';
+import '../styles/JuniorDashboard.css';
 
 export default function JuniorDashboard() {
   const [submissions, setSubmissions] = useState([]);
@@ -63,6 +67,10 @@ export default function JuniorDashboard() {
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskError, setTaskError] = useState('');
+  const [learningProfile, setLearningProfile] = useState(null);
+  const [learningUnlockables, setLearningUnlockables] = useState([]);
+  const [learningLoading, setLearningLoading] = useState(true);
+  const [learningError, setLearningError] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -78,6 +86,7 @@ export default function JuniorDashboard() {
   useEffect(() => {
     loadData();
     loadTasks();
+    loadLearning();
   }, []);
 
   useEffect(() => {
@@ -151,6 +160,23 @@ export default function JuniorDashboard() {
     } catch (err) {
       console.error('Error loading tasks:', err);
       setTaskError(err.message || 'Failed to load tasks');
+    }
+  };
+
+  const loadLearning = async () => {
+    setLearningLoading(true);
+    setLearningError('');
+    try {
+      const [profile, unlockables] = await Promise.all([getCareerProfile(), getUnlockables()]);
+      setLearningProfile(profile || null);
+      setLearningUnlockables(unlockables || []);
+    } catch (err) {
+      console.error('Error loading learning data:', err);
+      setLearningError(err.message || 'Learning data unavailable');
+      setLearningProfile(null);
+      setLearningUnlockables([]);
+    } finally {
+      setLearningLoading(false);
     }
   };
 
@@ -293,7 +319,13 @@ export default function JuniorDashboard() {
     return `build-status-${(status || 'pending').toLowerCase()}`;
   };
 
-  if (loading) return <div className="loading">Loading dashboard...</div>;
+  if (loading) {
+    return (
+      <DashboardLayout title="Junior Developer Dashboard" subtitle="Build, submit, and improve through review cycles">
+        <LoadingState message="Loading developer workspace..." />
+      </DashboardLayout>
+    );
+  }
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -356,19 +388,143 @@ export default function JuniorDashboard() {
     return (terminalData.history || []).filter((entry) => entry.sessionId === sessionId);
   };
 
+  const user = getUser();
+  const displayName = user?.fullName || user?.name || user?.username || 'Junior Developer';
+  const taskCounts = {
+    assigned: tasks.filter((task) => task.status === 'ASSIGNED').length,
+    inProgress: tasks.filter((task) => task.status === 'IN_PROGRESS').length,
+    completed: tasks.filter((task) => task.status === 'APPROVED').length,
+  };
+  const latestSubmissions = [...submissions]
+    .sort((first, second) => new Date(second.submittedAt || second.createdAt || 0) - new Date(first.submittedAt || first.createdAt || 0))
+    .slice(0, 5);
+  const recentActivities = [
+    ...tasks.map((task) => ({
+      id: `task-${task._id}`,
+      title: `Task ${task.status === 'APPROVED' ? 'completed' : 'updated'}`,
+      description: task.title || 'Task title unavailable',
+      timestamp: task.updatedAt || task.createdAt,
+      tone: task.status === 'APPROVED' ? 'green' : 'blue',
+    })),
+    ...latestSubmissions.map((submission) => ({
+      id: `submission-${submission._id}`,
+      title: 'Code submitted',
+      description: submission.title || 'Submission title unavailable',
+      timestamp: submission.submittedAt || submission.createdAt,
+      tone: submission.status === 'REJECTED' ? 'orange' : 'purple',
+    })),
+  ]
+    .sort((first, second) => new Date(second.timestamp || 0) - new Date(first.timestamp || 0))
+    .slice(0, 5);
+  const formatDate = (timestamp) => timestamp
+    ? new Date(timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+    : 'Date unavailable';
+  const scrollToSection = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const learningItems = Array.isArray(learningProfile?.unlocked)
+    ? learningProfile.unlocked
+    : learningUnlockables.filter((item) => item.unlocked || item.completed);
+
   return (
     <DashboardLayout
       title="Junior Developer Dashboard"
       subtitle="Build, submit, and improve through review cycles"
     >
-    <div>
-      <RoleStats role="JUNIOR" />
+    <div className="junior-dashboard">
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
       {taskError && <div className="error">{taskError}</div>}
 
+      <PageHeader
+        title={`Good morning, ${displayName} 👋`}
+        subtitle="Continue your tasks, learning and development work."
+      />
+
+      <div className="junior-data-note">Live task, submission, and build data is shown below. Progress is only displayed when the existing APIs provide it.</div>
+
+      <section className="junior-kpi-grid" aria-label="Junior Developer KPIs">
+        <StatCard title="My Tasks" value={tasks.length} subtitle={tasks.length ? 'Assigned tasks' : 'No assigned tasks yet'} icon="✓" />
+        <StatCard title="In Progress" value={tasks.length ? taskCounts.inProgress : 'N/A'} subtitle={tasks.length ? 'Tasks currently underway' : 'No task data'} icon="◷" />
+        <StatCard title="Completed" value={tasks.length ? taskCounts.completed : 'N/A'} subtitle={tasks.length ? 'Approved tasks' : 'No task data'} icon="✓" />
+        <StatCard title="Builds / Submissions" value={submissions.length} subtitle={submissions.length ? `${Object.values(buildLogs).flat().length} build records loaded` : 'No recent submissions'} icon="⇧" />
+      </section>
+
+      <div className="junior-dashboard-grid">
+        <ChartCard title="My Tasks" subtitle="Work assigned through the existing workspace task API">
+          {tasks.length === 0 ? (
+            <EmptyState icon="✓" title="No assigned tasks yet" message="Assigned workspace tasks will appear here." />
+          ) : (
+            <div className="junior-task-list">
+              {tasks.slice(0, 5).map((task) => (
+                <div className="junior-task-row" key={task._id}>
+                  <span className={`junior-task-check ${task.status === 'APPROVED' ? 'complete' : ''}`}>{task.status === 'APPROVED' ? '✓' : '○'}</span>
+                  <div>
+                    <strong>{task.title}</strong>
+                    <span>{task.projectType} · {task.techArea}{task.dueDate ? ` · Due ${formatDate(task.dueDate)}` : ''}</span>
+                  </div>
+                  <StatusBadge status={task.status} tone={task.status === 'APPROVED' ? 'success' : task.status === 'IN_PROGRESS' ? 'info' : 'neutral'} />
+                </div>
+              ))}
+            </div>
+          )}
+          {tasks.length > 5 && <button type="button" className="junior-inline-action" onClick={() => scrollToSection('junior-assigned-tasks')}>View all tasks →</button>}
+        </ChartCard>
+
+        <ChartCard title="Coding Workspace" subtitle="Continue work in the existing VIE editor and submission flow">
+          <div className="junior-workspace-actions">
+            <button type="button" onClick={() => window.location.assign('/code-editor')}>Open Coding Workspace <span>→</span></button>
+            <button type="button" onClick={() => scrollToSection('junior-submit-work')}>Submit Work <span>→</span></button>
+            <button type="button" onClick={() => scrollToSection('junior-submissions')}>View Submissions <span>→</span></button>
+            <button type="button" onClick={() => scrollToSection('junior-submissions')}>View Feedback <span>→</span></button>
+          </div>
+        </ChartCard>
+      </div>
+
+      <div className="junior-dashboard-grid junior-dashboard-grid-secondary">
+        <ChartCard title="Learning Progress" subtitle="Career and unlockable data from VIE learning services">
+          {learningLoading ? (
+            <LoadingState message="Loading learning progress..." />
+          ) : learningError ? (
+            <EmptyState icon="◇" title="Start your learning journey" message="Learning progress is currently unavailable." />
+          ) : learningItems.length === 0 ? (
+            <EmptyState icon="◇" title="Start your learning journey" message="Complete work and unlock learning milestones to see progress here." />
+          ) : (
+            <div className="junior-learning-summary">
+              <strong>{learningItems.length} learning milestone{learningItems.length === 1 ? '' : 's'} unlocked</strong>
+              <p>Milestones currently returned by the career service. A completion percentage is not available.</p>
+            </div>
+          )}
+        </ChartCard>
+
+        <ChartCard title="Recent Activity" subtitle="Task, submission, and review activity from your workspace">
+          {recentActivities.length === 0 ? (
+            <EmptyState icon="◷" title="No recent activity" message="Task and submission activity will appear here." />
+          ) : (
+            <div className="junior-activity-list">
+              {recentActivities.map((activity) => (
+                <ActivityItem key={activity.id} title={activity.title} description={activity.description} timestamp={formatDate(activity.timestamp)} tone={activity.tone} />
+              ))}
+            </div>
+          )}
+        </ChartCard>
+      </div>
+
+      <ChartCard title="My Projects" subtitle="Projects currently returned by the existing project API">
+        {projects.length === 0 ? (
+          <EmptyState icon="▦" title="No projects assigned" message="Projects will appear here when they are available to your account." />
+        ) : (
+          <div className="junior-project-list">
+            {projects.map((project) => (
+              <div className="junior-project-row" key={project._id || project.id || project.slug || project.name}>
+                <div><strong>{project.name}</strong><span>{project.description || 'Project details unavailable'}</span></div>
+                <StatusBadge status="Available" tone="info" />
+              </div>
+            ))}
+          </div>
+        )}
+      </ChartCard>
+
       {/* Assigned Tasks Section */}
-      <div className="card">
+      <div className="card" id="junior-assigned-tasks">
         <h2>📋 Assigned Tasks</h2>
         <p style={{ color: 'var(--text-grey)', marginBottom: '15px' }}>
           Your assigned workspace tasks with status tracking.
@@ -450,7 +606,7 @@ export default function JuniorDashboard() {
         )}
       </div>
 
-      <div className="card">
+      <div className="card" id="junior-submit-work">
         <h2>📤 Submit Code</h2>
         {selectedTask && (
           <div style={{
@@ -592,7 +748,7 @@ export default function JuniorDashboard() {
         </form>
       </div>
 
-      <div className="card">
+      <div className="card" id="junior-submissions">
         <h2>📋 My Submissions</h2>
         {submissions.length === 0 ? (
           <p>No submissions yet.</p>

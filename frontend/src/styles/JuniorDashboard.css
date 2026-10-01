@@ -7,13 +7,6 @@
   margin: 0 auto;
 }
 
-.dashboard-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
 /* Sections */
 .dashboard-section {
   display: flex;
@@ -420,6 +413,113 @@ button {
     grid-template-columns: 1fr;
   }
 
+
+/* Phase 3C Junior Developer dashboard */
+.junior-dashboard {
+  --junior-blue: #4f7cff;
+  --junior-purple: #8068d9;
+  --junior-green: #27a977;
+  --junior-orange: #e99839;
+}
+
+.junior-data-note {
+  margin: -12px 0 20px;
+  color: var(--shell-muted);
+  font-size: 11px;
+}
+
+.junior-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.junior-kpi-grid .stat-card {
+  display: grid;
+  min-height: 142px;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 20px;
+  border: 1px solid var(--shell-border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--shell-text);
+  text-align: left;
+  box-shadow: 0 3px 13px rgba(35, 60, 96, 0.045);
+}
+
+.junior-kpi-grid .stat-card:hover { transform: none; box-shadow: 0 7px 18px rgba(35, 60, 96, 0.09); }
+.junior-kpi-grid .stat-icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 8px; background: #eaf1ff; color: var(--junior-blue); font-size: 18px; }
+.junior-kpi-grid .stat-card:nth-child(2) .stat-icon { background: #fff3e2; color: var(--junior-orange); }
+.junior-kpi-grid .stat-card:nth-child(3) .stat-icon { background: #edf8f3; color: var(--junior-green); }
+.junior-kpi-grid .stat-card:nth-child(4) .stat-icon { background: #f1edff; color: var(--junior-purple); }
+.junior-kpi-grid .stat-title { margin: 0 0 10px; color: var(--shell-muted); font-size: 11px; font-weight: 700; }
+.junior-kpi-grid .stat-value { color: var(--shell-text); font-size: 27px; font-weight: 750; line-height: 1; }
+.junior-kpi-grid .stat-subtitle { margin: 9px 0 0; color: var(--shell-muted); font-size: 10px; line-height: 1.35; }
+
+.junior-dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 16px; margin-bottom: 18px; }
+.junior-dashboard-grid-secondary { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+
+.junior-task-list,
+.junior-activity-list,
+.junior-project-list { display: grid; }
+.junior-task-row { display: flex; align-items: center; gap: 11px; padding: 12px 0; border-bottom: 1px solid var(--shell-border); }
+.junior-task-row:last-child,
+.junior-project-row:last-child { border-bottom: 0; }
+.junior-task-check { display: grid; width: 22px; height: 22px; flex: 0 0 22px; place-items: center; border: 1px solid #c9d4e4; border-radius: 50%; color: var(--shell-muted); font-size: 12px; }
+.junior-task-check.complete { border-color: #a6dcc3; background: #e7f7ef; color: var(--junior-green); }
+.junior-task-row > div { min-width: 0; flex: 1; }
+.junior-task-row strong,
+.junior-task-row span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.junior-task-row strong { color: var(--shell-text); font-size: 12px; }
+.junior-task-row div span { margin-top: 4px; color: var(--shell-muted); font-size: 10px; }
+.junior-inline-action { margin-top: 12px; padding: 0; border: 0; background: transparent; color: #315db3; font-size: 11px; font-weight: 700; }
+
+.junior-workspace-actions { display: grid; gap: 7px; }
+.junior-workspace-actions button { display: flex; align-items: center; justify-content: space-between; padding: 11px 12px; border: 1px solid var(--shell-border); border-radius: 6px; background: #f8fafd; color: var(--shell-text); font-size: 11px; font-weight: 700; text-align: left; }
+.junior-workspace-actions button:hover { border-color: #b9caf0; background: #eef4ff; color: #315db3; }
+.junior-workspace-actions span { color: var(--junior-blue); font-size: 16px; }
+
+.junior-learning-summary { display: grid; gap: 9px; padding: 15px 0 5px; }
+.junior-learning-summary strong { color: var(--shell-text); font-size: 17px; }
+.junior-learning-summary p { margin: 0; color: var(--shell-muted); font-size: 11px; line-height: 1.5; }
+
+.junior-project-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--shell-border); }
+.junior-project-row > div { min-width: 0; flex: 1; }
+.junior-project-row strong,
+.junior-project-row span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.junior-project-row strong { color: var(--shell-text); font-size: 12px; }
+.junior-project-row span { margin-top: 4px; color: var(--shell-muted); font-size: 10px; }
+
+.junior-dashboard .card { border-color: var(--shell-border); background: #fff; box-shadow: 0 3px 13px rgba(35, 60, 96, 0.045); }
+.junior-dashboard .card h2 { color: var(--shell-text); font-size: 15px; }
+
+/* Phase 4: harmonize Junior workflow panels while leaving editor surfaces dark. */
+.dashboard-layout:has(.junior-dashboard) .dashboard-main { background: var(--shell-workspace); }
+.junior-dashboard .card { border-radius: 10px; }
+.junior-dashboard .card > h2 { color: var(--shell-text); }
+.junior-dashboard .card > form > .form-group label { color: var(--shell-text); font-size: 12px; font-weight: 700; }
+.junior-dashboard .card > form > .form-group input,
+.junior-dashboard .card > form > .form-group select,
+.junior-dashboard .card > form > .form-group textarea { border-color: var(--shell-border); border-radius: 7px; background: #fbfcfe; color: var(--shell-text); }
+.junior-dashboard .card > form > .form-group input:focus,
+.junior-dashboard .card > form > .form-group select:focus,
+.junior-dashboard .card > form > .form-group textarea:focus { border-color: #9bb8ea; box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12); }
+
+@media (max-width: 1100px) { .junior-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .junior-dashboard-grid,
+  .junior-dashboard-grid-secondary { grid-template-columns: 1fr; }
+  .junior-task-row { align-items: flex-start; flex-wrap: wrap; }
+  .junior-task-row > .dashboard-status-badge { margin-left: 33px; }
+}
+@media (max-width: 520px) {
+  .junior-kpi-grid { grid-template-columns: 1fr; }
+  .junior-kpi-grid .stat-card { min-height: 116px; }
+  .junior-project-row { align-items: flex-start; flex-direction: column; }
+}
   .stat-card {
     padding: 1rem;
   }
